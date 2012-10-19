@@ -34,10 +34,6 @@ protected:
     // 分割9个角
     void spliteToCaps();
     
-    void setPoint(CCSprite* _pSprite, float _x, float _y);
-    void setWidth(CCSprite* _pSprite, float _w);
-    void setHeight(CCSprite* _pSprite, float _h);
-    
 public:
     //设置身体矩形
     void setContentSize(CCSize size);

@@ -1,5 +1,5 @@
 //
-//  DD9Sprite.cpp
+//  DD9SpriteBatchNode.cpp
 //  typhoonwar
 //
 //  Created by ding huidong on 12-10-17.
@@ -106,23 +106,9 @@ void DD9SpriteBatchNode::spliteToCaps()
     this->setContentSize(frameRect.size);
 }
 
-void DD9SpriteBatchNode::setPoint(CCSprite* _pSprite, float _x, float _y)
-{
-    _pSprite->setPosition(ccp(_x, _y));
-//    CCLOG("set point x=%f, y=%f", _pSprite->getPosition().x, _pSprite->getPosition().y);
-}
-
-void DD9SpriteBatchNode::setWidth(CCSprite* _pSprite, float _w)
-{
-    float scale = _w/_pSprite->getContentSize().width;
-    _pSprite->setScaleX(scale);
-}
-
-void DD9SpriteBatchNode::setHeight(CCSprite* _pSprite, float _h)
-{
-    float scale = _h/_pSprite->getContentSize().height;
-    _pSprite->setScaleY(scale);
-}
+#define SET_POINT(_SPR_,_X_,_Y_) (_SPR_->setPosition(ccp(_X_, _Y_)))
+#define SET_WIDTH(_SPR_,_W_) (_SPR_->setScaleX(_W_/_SPR_->getContentSize().width))
+#define SET_HEIGHT(_SPR_,_H_) (_SPR_->setScaleY(_H_/_SPR_->getContentSize().height))
 
 void DD9SpriteBatchNode::setContentSize(CCSize size)
 {
@@ -138,37 +124,37 @@ void DD9SpriteBatchNode::setContentSize(CCSize size)
         pSprite = (CCSprite*)pObject;
         if (i == 0) {
             // 上左
-            setPoint(pSprite, 0, m_angle.height + mh);
+            SET_POINT(pSprite, 0, m_angle.height + mh);
         }else if(i == 1){
             // 上中
-            setPoint(pSprite, m_angle.width , m_angle.height + mh);
-            setWidth(pSprite, mw);
+            SET_POINT(pSprite, m_angle.width , m_angle.height + mh);
+            SET_WIDTH(pSprite, mw);
         }
         else if(i == 2){
             // 上右
-            setPoint(pSprite, m_angle.width + mw, m_angle.height + mh);
+            SET_POINT(pSprite, m_angle.width + mw, m_angle.height + mh);
         }else if(i == 3){
             // 中左
-            setPoint(pSprite, 0, m_angle.height);
-            setHeight(pSprite, mh);
+            SET_POINT(pSprite, 0, m_angle.height);
+            SET_HEIGHT(pSprite, mh);
         }else if(i == 4){
             // 中中
-            setPoint(pSprite, m_angle.width, m_angle.height);
-            setWidth(pSprite, mw);
-            setHeight(pSprite, mh);
+            SET_POINT(pSprite, m_angle.width, m_angle.height);
+            SET_WIDTH(pSprite, mw);
+            SET_HEIGHT(pSprite, mh);
         }else if(i == 5){
             // 中右
-            setPoint(pSprite, mw + m_angle.width, m_angle.height);
-            setHeight(pSprite, mh);
+            SET_POINT(pSprite, mw + m_angle.width, m_angle.height);
+            SET_HEIGHT(pSprite, mh);
         }else if(i == 6){
             // 下左
         }else if(i == 7){
             // 下中
-            setPoint(pSprite, m_angle.width, 0);
-            setWidth(pSprite, mw);
+            SET_POINT(pSprite, m_angle.width, 0);
+            SET_WIDTH(pSprite, mw);
         }else if(i == 8){
             // 下右
-            setPoint(pSprite, mw + m_angle.width, 0);
+            SET_POINT(pSprite, mw + m_angle.width, 0);
         }
         i++;
     }
