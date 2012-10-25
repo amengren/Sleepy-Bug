@@ -134,7 +134,7 @@ void SNSTableView::loadData()
     //计算总高度
 	setScrollWidthOrHeight();
     //设置底部指针位置
-	if (m_rowCount <= m_rowMaxInstance) m_bottomPointer = m_rowCount;
+	if (m_rowCount == m_rowMaxInstance + 1 || m_rowCount <= m_rowMaxInstance) m_bottomPointer = m_rowCount;
     //设置顶部指针
 	for (int i = 0; i < m_rowCount; i++) {
 		if (i == 0) {
@@ -367,10 +367,10 @@ SNSTableViewCellItem* SNSTableView::dequeueReusableCellItemForIndexPath(SNSIndex
 	if (item) {
 		// CCLOG("item::::::::::::%d, row:%d", indexPath->getColumn(), row);
 		// 判断item是否是cellItem子类
-//		if (typeid(item) == typeid(SNSTableViewCellItem)) {
-//			//只复用格子，内容物重新获取
-//			item->removeAllChildrenWithCleanup(true);
-//		}
+		if (typeid(*item) == typeid(SNSTableViewCellItem)) {
+			//只复用格子，内容物重新获取
+			item->removeAllChildrenWithCleanup(true);
+		}
 		/* 这里不需要移除所有内容，需要移除的话去delegate函数中移除 */
 		return item;
 	}

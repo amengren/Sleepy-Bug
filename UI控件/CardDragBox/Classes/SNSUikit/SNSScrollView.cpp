@@ -78,14 +78,14 @@ SNSScrollView* SNSScrollView::initWithFrame(CCRect frames)
 
 SNSScrollView* SNSScrollView::create(CCRect frames)
 {
-    SNSScrollView* pRet = new SNSScrollView();
-    
-    if ( pRet && pRet->initScrollViewFrame(frames) ) {
-        pRet->autorelease();
-        return pRet;
-    }
+	SNSScrollView* pRet = new SNSScrollView();
+	
+	if ( pRet && pRet->initScrollViewFrame(frames) ) {
+		pRet->autorelease();
+		return pRet;
+	}
 	CC_SAFE_DELETE(pRet);
-    return NULL;
+	return NULL;
 }
 
 #pragma mark - slider public function
@@ -277,7 +277,7 @@ void SNSScrollView::setBodySize(CCSize var)
 
 void SNSScrollView::registerWithTouchDispatcher()
 {
-    CCDirector::sharedDirector()->getTouchDispatcher()->addTargetedDelegate(this, kCCMenuHandlerPriority, true);
+    CCDirector::sharedDirector()->getTouchDispatcher()->addTargetedDelegate(this, kCCMenuHandlerPriority, false);
 }
 
 void SNSScrollView::visit()
@@ -561,7 +561,7 @@ void SNSScrollView::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
             moveMaxDistance = maxDis;
         }
         //斜率
-        lineK = (touchLocation.y-m_scrollStartVector.y)/(touchLocation.x-m_scrollStartVector.x);
+        lineK = (touchLocation.y - m_scrollStartVector.y) / (touchLocation.x - m_scrollStartVector.x);
 	}
     //判断时间阈值在指定范围内且移动速度小于阈值那么触发拖动开始事件
     if (!m_isDraging && getLongTimes() - m_startDragInterval > SPACE_TIME && getLongTimes() - m_startDragInterval < INVALID_TIME && distance < 10) {
