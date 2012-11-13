@@ -244,10 +244,13 @@ protected:
 	virtual void update(float dt);
 
 private:
-
+    //资源列表
 	std::vector <SCMLHelper::Folder *> mFolders;
+    
+    //动作列表
 	std::vector <SCMLHelper::Entity *> mEntities;
-
+    
+    //当前播放的动作索引
 	int mCurrEntity;
 };
 
