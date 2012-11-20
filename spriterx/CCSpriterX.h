@@ -154,6 +154,9 @@ namespace SCMLHelper
 		void SetPosition(const cocos2d::CCPoint &pos);
         
         void SetLoop(bool isloop);
+        
+        //获取总时长
+        float getLength() const { return mLength; }
 	private:
 		int mId;
 		std::string mName;
@@ -192,7 +195,11 @@ namespace SCMLHelper
 
         void SetAnimation(int aniID);
         
+        //设置是否循环
         void SetLoop(bool isloop);
+        
+        //获得指定动画时间长度
+        float getTimeLength(int aniID);
 	private:
 
 		int mId;
@@ -215,10 +222,10 @@ public:
 	~CCSpriterX();
     //默认使用图片加载，设置为true使用plist
 	static CCSpriterX* create(const char *filename, bool isPlist=false);
+    bool initWithFile(const char *filename, bool isPlist);
     
 protected:
     CCSpriterX();
-    bool initWithFile(const char *filename, bool isPlist);
     
 public:
     //获取指定帧精灵
@@ -228,13 +235,25 @@ public:
 	void setPosition(const cocos2d::CCPoint &pos);
     
     //设置播放动画ID号
-    void setanimaID(int id);
+    void setanimaID(int _id);
     
     //切换到下一个动画
 	void PlayNext();
     
     //是否循环播放
     void setisloop(bool isloop);
+    
+    //获取动画播放总时长
+    float getAnimaTimeLength(int _id, int _aniID) const;
+    
+    //停止播放
+    void stop();
+    
+    //播放
+    void play();
+    
+    //加速动画播放
+    void setAnimaSpeed(float _speedTime);
     
 protected:
     //绘制
@@ -252,6 +271,9 @@ private:
     
     //当前播放的动作索引
 	int mCurrEntity;
+    
+    //动画新时间
+    float mSpeedTime;
 };
 
 

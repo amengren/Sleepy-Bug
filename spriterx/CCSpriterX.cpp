@@ -124,8 +124,11 @@ namespace SCMLHelper
 			if (element->QueryIntAttribute("id", &intValue) == TIXML_SUCCESS)
 				mId= intValue;
 
-
-			mName = element->Attribute("name");
+            //dhd 目录可以为空
+            const char* strName = element->Attribute("name");
+			if ( strName ) {
+                mName = strName;
+            }
 
 			for (TiXmlNode* fileNode = node->FirstChild(); fileNode; fileNode = fileNode->NextSibling())
 			{
@@ -460,7 +463,6 @@ namespace SCMLHelper
 				mLength = floatValue/1000.0f;							// was in milliseconds, convert to seconds instead
 
 			const char *looping = element->Attribute("looping");		// was set to "false" in alpha, but in fact looping all the time
-			mLooping = true;
 
 			for (TiXmlNode* lineNode = node->FirstChild(); lineNode; lineNode = lineNode->NextSibling())
 			{
@@ -753,7 +755,7 @@ namespace SCMLHelper
 				Key *keyRef = mTimelines[ref->timeline]->GetKeyframe(ref->key);
 				Object *obj = keyRef->GetObject(0);									// should be only 1 object
 				obj->sprite->visit();
-						
+				obj->sprite->setBlendFunc((ccBlendFunc){GL_ZERO, GL_ZERO});
 			}
 
 		}
@@ -855,6 +857,11 @@ namespace SCMLHelper
 		mAnimations.push_back(animation);
 
 	}
+    
+    float Entity::getTimeLength(int aniID)
+    {
+        return (mAnimations[aniID]->getLength());
+    }
 
 }
 
@@ -867,7 +874,7 @@ CCSpriterX::CCSpriterX()
 {
 	mFolders.reserve(50);
 	mEntities.reserve(50);
-
+    mSpeedTime = 1.0f;
 }
 
 
@@ -895,7 +902,7 @@ void CCSpriterX::update(float dt)
 		dt = 0.0167f;
 
 	Entity *entity = mEntities[mCurrEntity];
-	entity->Update(dt);
+	entity->Update(dt*mSpeedTime);
 
 }
 
@@ -950,14 +957,20 @@ void CCSpriterX::setPosition(const cocos2d::CCPoint &pos)
 
 }
 
-void CCSpriterX::setanimaID(int id)
+void CCSpriterX::setanimaID(int _id)
 {
     Entity *entity = mEntities[mCurrEntity];
-    entity->SetAnimation(id);
+    entity->SetAnimation(_id);
 }
 
 bool CCSpriterX::initWithFile(const char *filename, bool isPlist)
 {
+//    if ( !CCSprite::init() ) {
+//        return false;
+//    }
+    
+    setAnchorPoint(ccp(0, 0));
+    
 	mCurrEntity = 0;
 
 	unsigned long filesize;
@@ -983,8 +996,7 @@ bool CCSpriterX::initWithFile(const char *filename, bool isPlist)
 		const char *version = element->Attribute("scml_version");
 		const char *generator = element->Attribute("generator");
 		const char *generatorVersion = element->Attribute("generator_version");
-
-			
+        
 
 		for (TiXmlNode* entityNode = root->FirstChild(); entityNode; entityNode = entityNode->NextSibling())
 		{
@@ -1033,11 +1045,35 @@ bool CCSpriterX::initWithFile(const char *filename, bool isPlist)
 	}
 
 	CC_SAFE_DELETE_ARRAY(buffer);
-
-	this->scheduleUpdate();
+    
+    //默认就开始播放
+    play();
 
 	return true;
 
 }
-	
 
+float CCSpriterX::getAnimaTimeLength(int _id, int _aniID) const
+{
+    return mEntities[_id]->getTimeLength(_aniID);
+}
+
+//停止播放
+void CCSpriterX::stop()
+{
+    this->unscheduleUpdate();
+    //让动画重置
+    this->setanimaID(mCurrEntity);
+}
+
+//播放
+void CCSpriterX::play()
+{
+    this->setPosition(this->getPosition());
+    this->scheduleUpdate();
+}
+
+void CCSpriterX::setAnimaSpeed(float _speedTime)
+{
+    mSpeedTime = _speedTime;
+}
