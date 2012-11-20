@@ -755,7 +755,7 @@ namespace SCMLHelper
 				Key *keyRef = mTimelines[ref->timeline]->GetKeyframe(ref->key);
 				Object *obj = keyRef->GetObject(0);									// should be only 1 object
 				obj->sprite->visit();
-				obj->sprite->setBlendFunc((ccBlendFunc){GL_ZERO, GL_ZERO});
+//				obj->sprite->setBlendFunc((ccBlendFunc){GL_ZERO, GL_ZERO});
 			}
 
 		}
