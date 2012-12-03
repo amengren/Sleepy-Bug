@@ -272,7 +272,7 @@ private:
     //当前播放的动作索引
 	int mCurrEntity;
     
-    //加速播放频率
+    //动画新时间
     float mSpeedTime;
 };
 
