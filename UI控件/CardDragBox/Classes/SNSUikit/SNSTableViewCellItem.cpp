@@ -10,11 +10,12 @@
 
 bool SNSTableViewCellItem::initCellItem()
 {
-    if ( !CCLayerColor::initWithColor(ccc4(0, 0, 1+rand()%255, 0)) ) {
-        return false;
-    }
-//    this->setIsRelativeAnchorPoint(true);
-//    this->setAnchorPoint(ccp(0.5, 0));
+//    if ( !CCLayerColor::initWithColor(ccc4(0, 0, 1+rand()%255, 0)) ) {
+//        return false;
+//    }
+	if (!CCLayer::init()) {
+		return false;
+	}
     
     return true;
 }

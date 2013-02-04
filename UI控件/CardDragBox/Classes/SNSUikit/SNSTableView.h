@@ -22,15 +22,21 @@ class SNSTableView;
 
 typedef enum {
     TableViewTypeINVALID = 0,
-    TableViewTypeHorizontal,
-    TableViewTypeVertical,
+    TableViewTypeHorizontal,		// TableView滚动方向：横向
+    TableViewTypeVertical,			// TableView滚动方向：纵向
 } TableViewType;
 
 typedef enum {
 	ReuseCellOrientationINVALID = 0,
-	ReuseCellOrientationBefore,
-	ReuseCellOrientationAfter,
+	ReuseCellOrientationBefore,		// 复用方式：向前
+	ReuseCellOrientationAfter,		// 复用方式：向后
 } ReuseCellOrientation;
+
+typedef enum {
+	TableViewSelectTypeINVALID = 0,
+	TableViewSelectTypeSingle,		// TableView选中item的类型：单选
+	TableViewSelectTypeMulti,		// TableView选中item的类型：多选
+} TableViewSelectType;
 
 class SNSTableViewDelegate : public SNSScrollViewDelegate
 {
@@ -82,6 +88,9 @@ public:
     //反馈内容物（item）拖动结束事件
 	bool isAchieve_tableViewDragEndItem;
     virtual void tableViewDidDragEndItem(SNSTableView* tableView, SNSIndexPath* indexPath, CCPoint position){};
+	
+	//当启用page功能的时候，返回当前是第几页
+	virtual void tableViewAtPage(SNSTableView* tableView, int page, int pageCount){};
 };
 
 //DataSource Delegate
@@ -105,6 +114,7 @@ public:
     //CC_SYNTHESIZE(SNSTableViewDelegate*, m_delegate, Delegate);
 	CC_SYNTHESIZE(SNSTableViewDataSource*, m_datasource, Datasource);
     CC_PROPERTY(TableViewType, m_tableType, TableType);
+	CC_PROPERTY(TableViewSelectType, m_selectType, SelectType);
     CC_SYNTHESIZE(bool, m_lazyLoad, LazyLoad);
     
     CC_SYNTHESIZE_READONLY(unsigned int, m_rowCount, RowCount);
@@ -122,6 +132,10 @@ protected:
 	int								m_margin;
     SNSIndexPath *                  m_lastDragIndex;
 	ReuseCellOrientation			m_orientation;
+	
+	CCSize							m_itemSize;
+	
+	bool *							m_selectedItem;
     
 protected:
     SNSTableView();
@@ -141,14 +155,15 @@ protected:
 	
 public:
 	virtual void scrollViewDidScroll();
+	virtual void returnNowPage(int nowPage, int pageCount);
     
 public:
     CC_DEPRECATED_ATTRIBUTE static SNSTableView* initWithFrame(CCRect frame, TableViewType types);
 	static SNSTableView* create(CCRect frame, TableViewType types);
     
 public:
-    //重载数据
-    void reloadData();
+    //重载数据,fullReload为true的时候完全重新载入数据，否则只是为了当前修改某些cell的数据而局部刷新
+    void reloadData(bool fullReload = true);
     //加载数据
     void loadData();
     
@@ -162,6 +177,8 @@ public:
     CCPoint getItemPositionWithIndexPath(SNSIndexPath* indexPath, float widthOrHeight);
     //根据indexPath获得当前的物品指针(必须写在这里，因为indexPath根本不知道也不需要知道当前有几列，等同于第几个item)
     unsigned int getItemPointerWithIndexPath(SNSIndexPath* indexPath);
+	//获取每个item的大小，ccsize类型
+	CCSize getItemSize();
     //根据indexPath获得cell
     SNSTableViewCell* getCellByIndexPath(SNSIndexPath* indexPath);
 	//根据indexPath获得item
@@ -170,6 +187,8 @@ public:
 	void moveCellToIndexPath(SNSTableViewCell *cell, SNSIndexPath *indexPath);
 	//判断传过来的indexPath的cell是否在顶部和底部指针之间
 	bool indexPathInArea(SNSIndexPath *indexPath);
+	//选中指定的tableView的item,然后调用cellItem中的setSelected事件
+	bool selectItemByIndexPath(SNSIndexPath *indexPath);
 	
 	//根据当前指针来确定是往前复用cell还是往后复用cell
 	void reuseCellForOrientation(ReuseCellOrientation orientation);
@@ -178,7 +197,7 @@ public:
 	//复用item函数
 	SNSTableViewCellItem* dequeueReusableCellItemForIndexPath(SNSIndexPath *indexPath);
     //根据传过来的indexPath移动cell到相应的位置
-    void  moveToIndexPath(SNSIndexPath* indexPath);
+    void moveToIndexPath(SNSIndexPath* indexPath);
     
 };
 

@@ -10,7 +10,7 @@
 
 SNSRollView::SNSRollView()
 :m_data(NULL), m_stopIndex(-1), m_rollPointer(0), m_isAdd(false),
-m_delegate(NULL), m_backImage(NULL), m_isSlowDown(false)
+m_delegate(NULL), m_backImage(NULL), m_isSlowDown(false), m_nowPointer(0)
 {
 	m_frame = CCRectMake(0, 0, 0, 0);
 	m_pos = ccp(0, 0);
@@ -58,20 +58,6 @@ SNSRollView* SNSRollView::create(CCRect frame)
     return NULL;
 }
 
-void SNSRollView::visit()
-{
-//	glEnable(GL_SCISSOR_TEST);
-//    CCRect frame = m_frame;
-//    //get world point to set the culling
-//    m_pos = getParent()->convertToWorldSpace(this->getPosition());
-//	//frame.origin = ccpAdd(m_pos, frame.origin);
-//	glScissor(m_pos.x * CC_CONTENT_SCALE_FACTOR(), m_pos.y * CC_CONTENT_SCALE_FACTOR(),
-//              frame.size.width * CC_CONTENT_SCALE_FACTOR(), frame.size.height * CC_CONTENT_SCALE_FACTOR());
-//	
-    SNSView::visit();
-//	glDisable(GL_SCISSOR_TEST);
-}
-
 #pragma mark - set data and start animation
 
 void SNSRollView::setDelegate(SNSRollViewDelegate *delegate)
@@ -87,11 +73,9 @@ void SNSRollView::setData(CCArray *data, CCSprite *backImage)
 	m_backImage = backImage;
 	m_backImage->retain();  // retain一下这两个元素，防止提前释放
 	if (NULL == m_data) return;
-	//首先添加对象到body上
-	CCSprite *spr = (CCSprite *)m_data->objectAtIndex(0);
 	//创建一个独立的sprite，保证数据中的sprite不被修改
 	CCSprite *floatSprite = CCSprite::create();
-	floatSprite->setDisplayFrame(spr->displayFrame());
+	floatSprite->setDisplayFrame(backImage->displayFrame());	
 	floatSprite->setPosition(ccp(m_frame.size.width * 0.5f, m_halfFrameHeight));
 	addChild(floatSprite, 0, kSpriteZOrder);
 }
@@ -99,6 +83,7 @@ void SNSRollView::setData(CCArray *data, CCSprite *backImage)
 void SNSRollView::resetValue()
 {
 	// 重新设置基础数值
+	m_stopIndex = -1;
 	m_speed = 0.3f;
 	m_rollPointer = 0;
 	m_isAdd = false;
@@ -114,7 +99,7 @@ void SNSRollView::startAnimation()
 
 void SNSRollView::update(float dt)
 {
-	unsigned int count = m_data->count() - 1;
+	unsigned int count = m_data->count();
 	if (count < 1) return; //低于1个元素就不用滚动了，滚动也没意义
 	
 	//先移动元素，翻牌完毕再修改指针
@@ -136,27 +121,30 @@ void SNSRollView::update(float dt)
 			}
 			spr->setDisplayFrame(newSprite->displayFrame());
 			// 如果是网络超时状态，那么加速结束
-			int duration = (m_stopIndex == -1)?1.0f:1.6f;
+			int duration = (m_stopIndex == -1)?1.2f:1.2f;
 			CCScaleTo *scaleChange = CCScaleTo::create(duration, 1.0f);
-			spr->runAction(scaleChange);
-			//调用回调函数
-			animationDidStop();
+			CCDelayTime *delay = CCDelayTime::create(0.6f);
+			CCCallFuncN *call = CCCallFuncN::create(this, callfuncN_selector(SNSRollView::animationDidStop));
+			CCAction *seq = CCSequence::create(scaleChange, delay, call, NULL);
+			spr->runAction(seq);
 			return;
 		}
 		//CCLOG("pointer:%d mod:%d", m_rollPointer, m_rollPointer % 2);
 		if (m_rollPointer % 2) {
 			//转到正面
-			int index = (m_rollPointer > count)?m_rollPointer % count:m_rollPointer;
+			int index = (m_nowPointer >= count)?m_nowPointer % count:m_nowPointer;
+			//CCLOG("count:%d index:%d", count, index);
 			newSprite = (CCSprite *)m_data->objectAtIndex(index);
+			++m_nowPointer;
 		} else {
 			//转到背面
 			newSprite = m_backImage;
 		}
 		spr->setDisplayFrame(newSprite->displayFrame());
-		if (m_isSlowDown) m_speed -= (m_stopIndex == -1)?0.06f:0.02f; // 这里如果网络超时，那么直接转到背面，否则转到前面
+		if (m_isSlowDown) m_speed -= (m_stopIndex == -1)?0.15f:0.06f; // 这里如果网络超时，那么直接转到背面，否则转到前面
 	}
 	// 这里放一个加速以控制翻牌的速度
-	float realSpeed = m_speed + 0.04f;
+	float realSpeed = m_speed + 0.06f;
 	spr->setScaleX(spr->getScaleX() + (m_isAdd?realSpeed:-realSpeed));
 }
 

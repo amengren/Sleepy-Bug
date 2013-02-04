@@ -13,7 +13,7 @@
 
 USING_NS_CC;
 
-class SNSView : public CCLayerColor {
+class SNSView : public CCLayer {
 public:
 	CC_PROPERTY(CCRect, m_frame, Frame);
 	CC_PROPERTY(CCSize,	m_bodySize, BodySize);

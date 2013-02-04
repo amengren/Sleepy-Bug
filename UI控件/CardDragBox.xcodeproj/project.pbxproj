@@ -7,16 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5AFF375D16352FEF00B6C52E /* SNSAlertView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFF374916352FEF00B6C52E /* SNSAlertView.cpp */; };
-		5AFF375E16352FEF00B6C52E /* SNSButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFF374B16352FEF00B6C52E /* SNSButton.cpp */; };
-		5AFF375F16352FEF00B6C52E /* SNSColorfulSprite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFF374D16352FEF00B6C52E /* SNSColorfulSprite.cpp */; };
-		5AFF376016352FEF00B6C52E /* SNSIndexPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFF374F16352FEF00B6C52E /* SNSIndexPath.cpp */; };
-		5AFF376116352FEF00B6C52E /* SNSRollView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFF375116352FEF00B6C52E /* SNSRollView.cpp */; };
-		5AFF376216352FEF00B6C52E /* SNSScrollView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFF375316352FEF00B6C52E /* SNSScrollView.cpp */; };
-		5AFF376316352FEF00B6C52E /* SNSTableView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFF375516352FEF00B6C52E /* SNSTableView.cpp */; };
-		5AFF376416352FEF00B6C52E /* SNSTableViewCell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFF375716352FEF00B6C52E /* SNSTableViewCell.cpp */; };
-		5AFF376516352FEF00B6C52E /* SNSTableViewCellItem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFF375916352FEF00B6C52E /* SNSTableViewCellItem.cpp */; };
-		5AFF376616352FEF00B6C52E /* SNSView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFF375B16352FEF00B6C52E /* SNSView.cpp */; };
+		5AFEA93516BB6340002D91D3 /* SNSAlertView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFEA91F16BB6340002D91D3 /* SNSAlertView.cpp */; };
+		5AFEA93616BB6340002D91D3 /* SNSButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFEA92116BB6340002D91D3 /* SNSButton.cpp */; };
+		5AFEA93716BB6340002D91D3 /* SNSColorfulSprite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFEA92316BB6340002D91D3 /* SNSColorfulSprite.cpp */; };
+		5AFEA93816BB6340002D91D3 /* SNSIndexPath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFEA92516BB6340002D91D3 /* SNSIndexPath.cpp */; };
+		5AFEA93916BB6340002D91D3 /* SNSLabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFEA92716BB6340002D91D3 /* SNSLabel.cpp */; };
+		5AFEA93A16BB6340002D91D3 /* SNSRollView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFEA92916BB6340002D91D3 /* SNSRollView.cpp */; };
+		5AFEA93B16BB6340002D91D3 /* SNSScrollView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFEA92B16BB6340002D91D3 /* SNSScrollView.cpp */; };
+		5AFEA93C16BB6340002D91D3 /* SNSTableView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFEA92D16BB6340002D91D3 /* SNSTableView.cpp */; };
+		5AFEA93D16BB6340002D91D3 /* SNSTableViewCell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFEA92F16BB6340002D91D3 /* SNSTableViewCell.cpp */; };
+		5AFEA93E16BB6340002D91D3 /* SNSTableViewCellItem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFEA93116BB6340002D91D3 /* SNSTableViewCellItem.cpp */; };
+		5AFEA93F16BB6340002D91D3 /* SNSView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5AFEA93316BB6340002D91D3 /* SNSView.cpp */; };
 		87E63B9F16118EAF004FD8FA /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87E63B9E16118EAF004FD8FA /* QuartzCore.framework */; };
 		87E63BA116118EAF004FD8FA /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87E63BA016118EAF004FD8FA /* OpenGLES.framework */; };
 		87E63BA316118EAF004FD8FA /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 87E63BA216118EAF004FD8FA /* OpenAL.framework */; };
@@ -208,26 +209,28 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		5AFF374916352FEF00B6C52E /* SNSAlertView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SNSAlertView.cpp; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSAlertView.cpp; sourceTree = "<group>"; };
-		5AFF374A16352FEF00B6C52E /* SNSAlertView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SNSAlertView.h; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSAlertView.h; sourceTree = "<group>"; };
-		5AFF374B16352FEF00B6C52E /* SNSButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SNSButton.cpp; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSButton.cpp; sourceTree = "<group>"; };
-		5AFF374C16352FEF00B6C52E /* SNSButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SNSButton.h; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSButton.h; sourceTree = "<group>"; };
-		5AFF374D16352FEF00B6C52E /* SNSColorfulSprite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SNSColorfulSprite.cpp; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSColorfulSprite.cpp; sourceTree = "<group>"; };
-		5AFF374E16352FEF00B6C52E /* SNSColorfulSprite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SNSColorfulSprite.h; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSColorfulSprite.h; sourceTree = "<group>"; };
-		5AFF374F16352FEF00B6C52E /* SNSIndexPath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SNSIndexPath.cpp; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSIndexPath.cpp; sourceTree = "<group>"; };
-		5AFF375016352FEF00B6C52E /* SNSIndexPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SNSIndexPath.h; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSIndexPath.h; sourceTree = "<group>"; };
-		5AFF375116352FEF00B6C52E /* SNSRollView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SNSRollView.cpp; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSRollView.cpp; sourceTree = "<group>"; };
-		5AFF375216352FEF00B6C52E /* SNSRollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SNSRollView.h; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSRollView.h; sourceTree = "<group>"; };
-		5AFF375316352FEF00B6C52E /* SNSScrollView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SNSScrollView.cpp; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSScrollView.cpp; sourceTree = "<group>"; };
-		5AFF375416352FEF00B6C52E /* SNSScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SNSScrollView.h; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSScrollView.h; sourceTree = "<group>"; };
-		5AFF375516352FEF00B6C52E /* SNSTableView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SNSTableView.cpp; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSTableView.cpp; sourceTree = "<group>"; };
-		5AFF375616352FEF00B6C52E /* SNSTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SNSTableView.h; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSTableView.h; sourceTree = "<group>"; };
-		5AFF375716352FEF00B6C52E /* SNSTableViewCell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SNSTableViewCell.cpp; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSTableViewCell.cpp; sourceTree = "<group>"; };
-		5AFF375816352FEF00B6C52E /* SNSTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SNSTableViewCell.h; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSTableViewCell.h; sourceTree = "<group>"; };
-		5AFF375916352FEF00B6C52E /* SNSTableViewCellItem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SNSTableViewCellItem.cpp; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSTableViewCellItem.cpp; sourceTree = "<group>"; };
-		5AFF375A16352FEF00B6C52E /* SNSTableViewCellItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SNSTableViewCellItem.h; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSTableViewCellItem.h; sourceTree = "<group>"; };
-		5AFF375B16352FEF00B6C52E /* SNSView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SNSView.cpp; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSView.cpp; sourceTree = "<group>"; };
-		5AFF375C16352FEF00B6C52E /* SNSView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SNSView.h; path = ../../../../../../svn/client/WarCraftCardGame/WarCraftCardGame/Classes/Utils/SNSUikit/SNSView.h; sourceTree = "<group>"; };
+		5AFEA91F16BB6340002D91D3 /* SNSAlertView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SNSAlertView.cpp; sourceTree = "<group>"; };
+		5AFEA92016BB6340002D91D3 /* SNSAlertView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SNSAlertView.h; sourceTree = "<group>"; };
+		5AFEA92116BB6340002D91D3 /* SNSButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SNSButton.cpp; sourceTree = "<group>"; };
+		5AFEA92216BB6340002D91D3 /* SNSButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SNSButton.h; sourceTree = "<group>"; };
+		5AFEA92316BB6340002D91D3 /* SNSColorfulSprite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SNSColorfulSprite.cpp; sourceTree = "<group>"; };
+		5AFEA92416BB6340002D91D3 /* SNSColorfulSprite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SNSColorfulSprite.h; sourceTree = "<group>"; };
+		5AFEA92516BB6340002D91D3 /* SNSIndexPath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SNSIndexPath.cpp; sourceTree = "<group>"; };
+		5AFEA92616BB6340002D91D3 /* SNSIndexPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SNSIndexPath.h; sourceTree = "<group>"; };
+		5AFEA92716BB6340002D91D3 /* SNSLabel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SNSLabel.cpp; sourceTree = "<group>"; };
+		5AFEA92816BB6340002D91D3 /* SNSLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SNSLabel.h; sourceTree = "<group>"; };
+		5AFEA92916BB6340002D91D3 /* SNSRollView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SNSRollView.cpp; sourceTree = "<group>"; };
+		5AFEA92A16BB6340002D91D3 /* SNSRollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SNSRollView.h; sourceTree = "<group>"; };
+		5AFEA92B16BB6340002D91D3 /* SNSScrollView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SNSScrollView.cpp; sourceTree = "<group>"; };
+		5AFEA92C16BB6340002D91D3 /* SNSScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SNSScrollView.h; sourceTree = "<group>"; };
+		5AFEA92D16BB6340002D91D3 /* SNSTableView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SNSTableView.cpp; sourceTree = "<group>"; };
+		5AFEA92E16BB6340002D91D3 /* SNSTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SNSTableView.h; sourceTree = "<group>"; };
+		5AFEA92F16BB6340002D91D3 /* SNSTableViewCell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SNSTableViewCell.cpp; sourceTree = "<group>"; };
+		5AFEA93016BB6340002D91D3 /* SNSTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SNSTableViewCell.h; sourceTree = "<group>"; };
+		5AFEA93116BB6340002D91D3 /* SNSTableViewCellItem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SNSTableViewCellItem.cpp; sourceTree = "<group>"; };
+		5AFEA93216BB6340002D91D3 /* SNSTableViewCellItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SNSTableViewCellItem.h; sourceTree = "<group>"; };
+		5AFEA93316BB6340002D91D3 /* SNSView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SNSView.cpp; sourceTree = "<group>"; };
+		5AFEA93416BB6340002D91D3 /* SNSView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SNSView.h; sourceTree = "<group>"; };
 		87E63B9A16118EAF004FD8FA /* CardDragBox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CardDragBox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		87E63B9E16118EAF004FD8FA /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		87E63BA016118EAF004FD8FA /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -651,6 +654,36 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5AFEA91E16BB6340002D91D3 /* SNSUikit */ = {
+			isa = PBXGroup;
+			children = (
+				5AFEA91F16BB6340002D91D3 /* SNSAlertView.cpp */,
+				5AFEA92016BB6340002D91D3 /* SNSAlertView.h */,
+				5AFEA92116BB6340002D91D3 /* SNSButton.cpp */,
+				5AFEA92216BB6340002D91D3 /* SNSButton.h */,
+				5AFEA92316BB6340002D91D3 /* SNSColorfulSprite.cpp */,
+				5AFEA92416BB6340002D91D3 /* SNSColorfulSprite.h */,
+				5AFEA92516BB6340002D91D3 /* SNSIndexPath.cpp */,
+				5AFEA92616BB6340002D91D3 /* SNSIndexPath.h */,
+				5AFEA92716BB6340002D91D3 /* SNSLabel.cpp */,
+				5AFEA92816BB6340002D91D3 /* SNSLabel.h */,
+				5AFEA92916BB6340002D91D3 /* SNSRollView.cpp */,
+				5AFEA92A16BB6340002D91D3 /* SNSRollView.h */,
+				5AFEA92B16BB6340002D91D3 /* SNSScrollView.cpp */,
+				5AFEA92C16BB6340002D91D3 /* SNSScrollView.h */,
+				5AFEA92D16BB6340002D91D3 /* SNSTableView.cpp */,
+				5AFEA92E16BB6340002D91D3 /* SNSTableView.h */,
+				5AFEA92F16BB6340002D91D3 /* SNSTableViewCell.cpp */,
+				5AFEA93016BB6340002D91D3 /* SNSTableViewCell.h */,
+				5AFEA93116BB6340002D91D3 /* SNSTableViewCellItem.cpp */,
+				5AFEA93216BB6340002D91D3 /* SNSTableViewCellItem.h */,
+				5AFEA93316BB6340002D91D3 /* SNSView.cpp */,
+				5AFEA93416BB6340002D91D3 /* SNSView.h */,
+			);
+			name = SNSUikit;
+			path = Classes/SNSUikit;
+			sourceTree = "<group>";
+		};
 		87E63B8F16118EAF004FD8FA = {
 			isa = PBXGroup;
 			children = (
@@ -1439,7 +1472,7 @@
 		87E63E0B16118EB3004FD8FA /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				87E63E1D16118F41004FD8FA /* SNSUikit */,
+				5AFEA91E16BB6340002D91D3 /* SNSUikit */,
 				87E63E0C16118EB3004FD8FA /* AppDelegate.h */,
 				87E63E0D16118EB3004FD8FA /* AppDelegate.cpp */,
 				87E63E0F16118EB3004FD8FA /* HelloWorldScene.h */,
@@ -1450,34 +1483,6 @@
 				87E63E1816118F39004FD8FA /* CardBox.h */,
 			);
 			name = Classes;
-			sourceTree = "<group>";
-		};
-		87E63E1D16118F41004FD8FA /* SNSUikit */ = {
-			isa = PBXGroup;
-			children = (
-				5AFF374916352FEF00B6C52E /* SNSAlertView.cpp */,
-				5AFF374A16352FEF00B6C52E /* SNSAlertView.h */,
-				5AFF374B16352FEF00B6C52E /* SNSButton.cpp */,
-				5AFF374C16352FEF00B6C52E /* SNSButton.h */,
-				5AFF374D16352FEF00B6C52E /* SNSColorfulSprite.cpp */,
-				5AFF374E16352FEF00B6C52E /* SNSColorfulSprite.h */,
-				5AFF374F16352FEF00B6C52E /* SNSIndexPath.cpp */,
-				5AFF375016352FEF00B6C52E /* SNSIndexPath.h */,
-				5AFF375116352FEF00B6C52E /* SNSRollView.cpp */,
-				5AFF375216352FEF00B6C52E /* SNSRollView.h */,
-				5AFF375316352FEF00B6C52E /* SNSScrollView.cpp */,
-				5AFF375416352FEF00B6C52E /* SNSScrollView.h */,
-				5AFF375516352FEF00B6C52E /* SNSTableView.cpp */,
-				5AFF375616352FEF00B6C52E /* SNSTableView.h */,
-				5AFF375716352FEF00B6C52E /* SNSTableViewCell.cpp */,
-				5AFF375816352FEF00B6C52E /* SNSTableViewCell.h */,
-				5AFF375916352FEF00B6C52E /* SNSTableViewCellItem.cpp */,
-				5AFF375A16352FEF00B6C52E /* SNSTableViewCellItem.h */,
-				5AFF375B16352FEF00B6C52E /* SNSView.cpp */,
-				5AFF375C16352FEF00B6C52E /* SNSView.h */,
-			);
-			name = SNSUikit;
-			path = Classes/SNSUikit;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1720,16 +1725,17 @@
 				87E63E1116118EB3004FD8FA /* HelloWorldScene.cpp in Sources */,
 				87E63E1B16118F39004FD8FA /* CardBox.cpp in Sources */,
 				87E63E1C16118F39004FD8FA /* DragLayer.cpp in Sources */,
-				5AFF375D16352FEF00B6C52E /* SNSAlertView.cpp in Sources */,
-				5AFF375E16352FEF00B6C52E /* SNSButton.cpp in Sources */,
-				5AFF375F16352FEF00B6C52E /* SNSColorfulSprite.cpp in Sources */,
-				5AFF376016352FEF00B6C52E /* SNSIndexPath.cpp in Sources */,
-				5AFF376116352FEF00B6C52E /* SNSRollView.cpp in Sources */,
-				5AFF376216352FEF00B6C52E /* SNSScrollView.cpp in Sources */,
-				5AFF376316352FEF00B6C52E /* SNSTableView.cpp in Sources */,
-				5AFF376416352FEF00B6C52E /* SNSTableViewCell.cpp in Sources */,
-				5AFF376516352FEF00B6C52E /* SNSTableViewCellItem.cpp in Sources */,
-				5AFF376616352FEF00B6C52E /* SNSView.cpp in Sources */,
+				5AFEA93516BB6340002D91D3 /* SNSAlertView.cpp in Sources */,
+				5AFEA93616BB6340002D91D3 /* SNSButton.cpp in Sources */,
+				5AFEA93716BB6340002D91D3 /* SNSColorfulSprite.cpp in Sources */,
+				5AFEA93816BB6340002D91D3 /* SNSIndexPath.cpp in Sources */,
+				5AFEA93916BB6340002D91D3 /* SNSLabel.cpp in Sources */,
+				5AFEA93A16BB6340002D91D3 /* SNSRollView.cpp in Sources */,
+				5AFEA93B16BB6340002D91D3 /* SNSScrollView.cpp in Sources */,
+				5AFEA93C16BB6340002D91D3 /* SNSTableView.cpp in Sources */,
+				5AFEA93D16BB6340002D91D3 /* SNSTableViewCell.cpp in Sources */,
+				5AFEA93E16BB6340002D91D3 /* SNSTableViewCellItem.cpp in Sources */,
+				5AFEA93F16BB6340002D91D3 /* SNSView.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -57,6 +57,8 @@ protected: /*SNSTableViewDelegate*/
     virtual void tableViewDidDragStartItem(SNSTableView* tableView, SNSIndexPath* indexPath, CCPoint position);
     //反馈内容物（item）拖动结束事件
     virtual void tableViewDidDragEndItem(SNSTableView* tableView, SNSIndexPath* indexPath, CCPoint position);
+	//返回当前页数和总页数
+	virtual void tableViewAtPage(SNSTableView* tableView, int page, int pageCount);
     
 public:
     virtual void registerWithTouchDispatcher();

@@ -51,7 +51,7 @@ enum {
 * 
 * Features and Limitation:
 *  - You can add MenuItem objects in runtime using addChild:
-*  - But the only accecpted children are MenuItem objects
+*  - But the only accepted children are MenuItem objects
 */
 class CC_DLL CCMenu : public CCLayer, public CCRGBAProtocol
 {
@@ -66,6 +66,7 @@ public:
     CCMenu()
         : m_cOpacity(0)
         , m_pSelectedItem(NULL)
+		, m_handlerPriority(kCCMenuHandlerPriority)
     {}
     virtual ~CCMenu(){}
 
@@ -139,6 +140,9 @@ public:
 
     /** set event handler priority. By default it is: kCCMenuTouchPriority */
     void setHandlerPriority(int newPriority);
+	
+	/** get event handler priority. By default it is: kCCMenuTouchPriority */
+	int getHandlerPriority() { return m_handlerPriority; }
 
     //super methods
     virtual void addChild(CCNode * child);
@@ -170,6 +174,7 @@ protected:
     CCMenuItem* itemForTouch(CCTouch * touch);
     tCCMenuState m_eState;
     CCMenuItem *m_pSelectedItem;
+	int m_handlerPriority;
 };
 
 // end of GUI group

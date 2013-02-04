@@ -24,10 +24,21 @@ SNSColorfulSprite* SNSColorfulSprite::create( const char* pszFileName )
 	SNSColorfulSprite* pSprGrayScale = new SNSColorfulSprite;
 	if (pSprGrayScale && pSprGrayScale->initWithFile(pszFileName)) {
 		pSprGrayScale->autorelease();
-	} else {
-		CC_SAFE_RELEASE(pSprGrayScale);
+		return pSprGrayScale;
 	}
-	return pSprGrayScale;
+	CC_SAFE_DELETE(pSprGrayScale);
+	return NULL;
+}
+
+SNSColorfulSprite* SNSColorfulSprite::createWithSpriteFrameName(const char* pszFileName)
+{
+	SNSColorfulSprite* pSprGrayScale = new SNSColorfulSprite;
+	if (pSprGrayScale && pSprGrayScale->initWithSpriteFrameName(pszFileName)) {
+		pSprGrayScale->autorelease();
+		return pSprGrayScale;
+	}
+	CC_SAFE_DELETE(pSprGrayScale);
+	return NULL;
 }
 
 bool SNSColorfulSprite::initWithTexture( cocos2d::CCTexture2D* pTexture, const cocos2d::CCRect& tRect )
@@ -45,8 +56,9 @@ bool SNSColorfulSprite::initWithTexture( cocos2d::CCTexture2D* pTexture, const c
 			void main(void) \n \
 			{ \n \
 				// Convert to greyscale using NTSC weightings \n \
+				float alpha = texture2D(u_texture, v_texCoord).a; \n \
 				float grey = dot(texture2D(u_texture, v_texCoord).rgb, vec3(0.299, 0.587, 0.114)); \n \
-				gl_FragColor = vec4(grey, grey, grey, 1.0); \n \
+				gl_FragColor = vec4(grey, grey, grey, alpha); \n \
 			}";
 		CCGLProgram* pProgram = new CCGLProgram();
 		pProgram->initWithVertexShaderByteArray(ccPositionTextureColor_vert, pszFragSource);

@@ -34,9 +34,10 @@ bool DragLayer::init()
         str->autorelease();
     }
 	//添加tableView到主界面上
-	SNSTableView *tableView = SNSTableView::create(CCRectMake(0, 20, 300, 260), TableViewTypeVertical);
+	SNSTableView *tableView = SNSTableView::create(CCRectMake(0, 20, 300, 260), TableViewTypeHorizontal);
 	tableView->setDelegate(this);
     tableView->setDatasource(this);
+	tableView->setPageEnable(true);
 	this->addChild(tableView);
     //添加碰撞块
     m_destinationLayer = CCLayerColor::create(ccc4(255, 255, 255, 255));
@@ -221,5 +222,10 @@ void DragLayer::tableViewDidDragStartItem(SNSTableView* tableView, SNSIndexPath*
 void DragLayer::tableViewDidDragEndItem(SNSTableView* tableView, SNSIndexPath* indexPath, CCPoint position)
 {
     CCLOG("拖动结束");
+}
+
+void DragLayer::tableViewAtPage(SNSTableView* tableView, int page, int pageCount)
+{
+	CCLOG("now page:%d -- pageCount:%d", page, pageCount);
 }
 

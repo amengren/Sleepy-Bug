@@ -10,7 +10,7 @@
 
 bool SNSView::initViewFrame(CCRect frame)
 {
-    if ( !CCLayerColor::initWithColor(ccc4(255, 255, 255, 0)) ) {
+    if ( !CCLayer::init() ) {
         return false;
     }
     setFrame(frame);

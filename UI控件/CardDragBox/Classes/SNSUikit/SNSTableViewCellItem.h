@@ -14,19 +14,27 @@
 
 USING_NS_CC;
 
-class SNSTableViewCellItem : public CCLayerColor //public CCNode 
+class SNSTableViewCellItem : public CCLayer
 {
 protected:
-    SNSTableViewCellItem():m_indexPath(NULL){}
-    virtual ~SNSTableViewCellItem(){}
+    SNSTableViewCellItem():m_indexPath(NULL), m_isSelected(false) {}
+    virtual ~SNSTableViewCellItem() {
+		setIndexPath(NULL);
+	}
     virtual bool initCellItem();
 	
 public:
     CC_DEPRECATED_ATTRIBUTE static SNSTableViewCellItem* initItem();
 	static SNSTableViewCellItem* create();
 	
-	CC_SYNTHESIZE_RETAIN(SNSIndexPath *, m_indexPath, IndexPath);
-    
+	CC_SYNTHESIZE_RETAIN(SNSIndexPath*, m_indexPath, IndexPath);
+
+public:
+	// 设置选中状态
+	virtual void setSelected(bool isSelected){m_isSelected = isSelected;};
+														// 设置选中状态
+	virtual	bool getSelected(){return m_isSelected;};	// 获得选中状态
+	bool			m_isSelected;						// 选中状态
 };
 
 #endif // _SNSUIKIT_SNSTABLEVIEWCELLITEM_H_

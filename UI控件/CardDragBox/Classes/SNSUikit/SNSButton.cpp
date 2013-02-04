@@ -10,41 +10,6 @@
 
 #define MOVE_PIXEL (10) //移动超过这个像素的点 不触发按钮事件
 
-void SNSButton::registerWithTouchDispatcher()
-{
-    CCDirector::sharedDirector()->getTouchDispatcher()->addTargetedDelegate(this, kCCMenuHandlerPriority, false);
-}
-
-bool SNSButton::ccTouchBegan(CCTouch* touch, CCEvent* event)
-{
-    m_noEnded = false;
-    return CCMenu::ccTouchBegan(touch, event);
-}
-
-void SNSButton::ccTouchEnded(CCTouch* touch, CCEvent* event)
-{
-    if ( !m_noEnded ) {
-        CCMenu::ccTouchEnded(touch, event);
-    } else {
-        CCMenu::ccTouchCancelled(touch, event);
-    }
-}
-
-void SNSButton::ccTouchCancelled(CCTouch *touch, CCEvent* event)
-{
-    m_noEnded = false;
-    CCMenu::ccTouchCancelled(touch, event);
-}
-
-void SNSButton::ccTouchMoved(CCTouch* touch, CCEvent* event)
-{
-    if ( !m_noEnded && ccpDistance(touch->getLocation(), touch->getPreviousLocation()) > MOVE_PIXEL ) {
-        m_noEnded = true;
-    }
-    
-    CCMenu::ccTouchMoved(touch, event);
-}
-
 SNSButton* SNSButton::menuWithItems(CCMenuItem* item, ...)
 {
 	va_list args;
@@ -85,4 +50,40 @@ SNSButton* SNSButton::create(CCMenuItem *item, ...)
 SNSButton* SNSButton::create(CCMenuItem *item)
 {
 	return create(item, NULL);
+}
+
+void SNSButton::registerWithTouchDispatcher()
+{
+    CCDirector::sharedDirector()->getTouchDispatcher()->addTargetedDelegate(this, m_handlerPriority + 1, true);
+}
+
+bool SNSButton::ccTouchBegan(CCTouch* touch, CCEvent* event)
+{
+    m_noEnded = false;
+	
+	return CCMenu::ccTouchBegan(touch, event);
+}
+
+void SNSButton::ccTouchEnded(CCTouch* touch, CCEvent* event)
+{
+    if ( !m_noEnded ) {
+        CCMenu::ccTouchEnded(touch, event);
+    } else {
+        CCMenu::ccTouchCancelled(touch, event);
+    }
+}
+
+void SNSButton::ccTouchCancelled(CCTouch *touch, CCEvent* event)
+{
+    m_noEnded = false;
+    CCMenu::ccTouchCancelled(touch, event);
+}
+
+void SNSButton::ccTouchMoved(CCTouch* touch, CCEvent* event)
+{
+    if ( !m_noEnded && ccpDistance(touch->getLocation(), touch->getPreviousLocation()) > MOVE_PIXEL ) {
+        m_noEnded = true;
+    }
+    
+    CCMenu::ccTouchMoved(touch, event);
 }

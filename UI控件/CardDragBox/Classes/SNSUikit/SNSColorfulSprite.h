@@ -22,6 +22,7 @@ public:
 	SNSColorfulSprite();
 	virtual ~SNSColorfulSprite();
 	static SNSColorfulSprite* create(const char* pszFileName);
+	static SNSColorfulSprite* createWithSpriteFrameName(const char* pszFileName);
 	bool initWithTexture(CCTexture2D* pTexture, const CCRect& tRect);
 	virtual void draw();
 
