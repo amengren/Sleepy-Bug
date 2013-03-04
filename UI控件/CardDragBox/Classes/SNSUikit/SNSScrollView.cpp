@@ -257,7 +257,7 @@ bool SNSScrollView::getHorizontal()
 void SNSScrollView::setFrame(CCRect var)
 {
     m_frame = var;
-	m_halfWinSize = CCSizeMake(m_frame.size.width*0.5, m_frame.size.height*0.5);
+	m_halfWinSize = CCSizeMake(m_frame.size.width * 0.5f, m_frame.size.height * 0.5f);
     this->setPosition(ccp(var.origin.x, var.origin.y));
     this->setContentSize(CCSizeMake(var.size.width, var.size.height));
     this->setBodySize(this->getContentSize());
@@ -396,24 +396,24 @@ void SNSScrollView::updateBody(float delta)
 						//CCLOG("now:%f -- last:%f", nowPageCenter, lastPageCenter);
                         if(m_nowPage >1 && m_nowPage < m_pageCount){
                             if (pos.y <= lastPageCenter || m_pageInertia.y < 0) {
-                                pos.y = m_nowPageBottom - m_frame.size.height;
+                                pos.y = m_nowPageBottom - m_frame.size.height + autoLength(1.0f);
                                 --m_nowPage;
                             } else if (pos.y > nowPageCenter || m_pageInertia.y > 0) {
-                                pos.y = m_nowPageBottom + m_frame.size.height;
+                                pos.y = m_nowPageBottom + m_frame.size.height - autoLength(1.0f);
                                 ++m_nowPage;
                             } else {
                                 pos.y = m_nowPageBottom;
                             }
                         } else if (m_nowPage == 1) {
                             if (pos.y > nowPageCenter || m_pageInertia.y > 0) {
-                                pos.y = m_nowPageBottom + m_frame.size.height;
+                                pos.y = m_nowPageBottom + m_frame.size.height - autoLength(1.0f);
                                 ++m_nowPage;
                             } else {
                                 pos.y = m_nowPageBottom;
                             }
                         } else if (m_nowPage == m_pageCount) {
                             if (pos.y <= lastPageCenter || m_pageInertia.y < 0) {
-                                pos.y = m_nowPageBottom - m_frame.size.height;
+                                pos.y = m_nowPageBottom - m_frame.size.height + autoLength(1.0f);
                                 --m_nowPage;
                             } else {
                                 pos.y = m_nowPageBottom;
@@ -425,24 +425,24 @@ void SNSScrollView::updateBody(float delta)
 						//CCLOG("now:%f -- last:%f", nowPageCenter, lastPageCenter);
                         if (m_nowPage > 1 && m_nowPage < m_pageCount) {
                             if (pos.x >= lastPageCenter || m_pageInertia.x > 0) {
-                                pos.x = lastPageCenter + m_halfWinSize.width;
+                                pos.x = lastPageCenter + m_halfWinSize.width - autoLength(1.0f);
                                 --m_nowPage;
                             } else if (pos.x < nowPageCenter || m_pageInertia.x < 0){
-                                pos.x = nowPageCenter - m_halfWinSize.width;
+                                pos.x = nowPageCenter - m_halfWinSize.width + autoLength(1.0f);
                                 ++m_nowPage;
                             } else {
                                 pos.x = m_nowPageLeft;
                             }
                         } else if (m_nowPage ==1) {
                             if (pos.x < nowPageCenter || m_pageInertia.x < 0) {
-                                pos.x = nowPageCenter - m_halfWinSize.width;
+                                pos.x = nowPageCenter - m_halfWinSize.width + autoLength(1.0f);
                                 ++m_nowPage;
                             } else {
                                 pos.x = m_nowPageLeft;
                             }
                         } else if (m_nowPage == m_pageCount) {
                             if (pos.x >= lastPageCenter || m_pageInertia.x > 0) {
-                                pos.x = lastPageCenter + m_halfWinSize.width;
+                                pos.x = lastPageCenter + m_halfWinSize.width - autoLength(1.0f);
                                 --m_nowPage;
                             } else {
                                 pos.x = m_nowPageLeft;
@@ -744,13 +744,13 @@ void SNSScrollView::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
         } else {
             //否则如果没有设置分页的情况下清空移动矢量
             if (moveLength.x > 0 && m_horizontal) {
-                m_scrollInertia.x = 0.11;
+                m_scrollInertia.x = 0.00001;
             } else if (moveLength.y > 0 && m_vertical) {
-                m_scrollInertia.y = 0.11;
+                m_scrollInertia.y = 0.00001;
             } else if (moveLength.x < 0 && m_horizontal) {
-                m_scrollInertia.x = -0.11;
+                m_scrollInertia.x = -0.00001;
             } else if (moveLength.y < 0 && m_vertical) {
-                m_scrollInertia.y = -0.11;
+                m_scrollInertia.y = -0.00001;
             }
 			if (!m_isPageEnable) {
                 m_scrollInertia = ccp(0,0);
@@ -973,7 +973,7 @@ void SNSScrollView::scrollViewDidEndDrag(CCPoint position)
 int SNSScrollView::autoLength(int length)
 {
 	CCSize mainFrame = CCDirector::sharedDirector()->getWinSize();
-    if ( mainFrame.width > 480 ) {
+    if ( mainFrame.width > 568 ) {
 		length <<= 1;
 	}
 	return length;

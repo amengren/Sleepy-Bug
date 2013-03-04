@@ -37,6 +37,8 @@ private:
     bool						m_isDraging;            //是否允许拖动
     CCLayerColor *				m_destinationLayer;     //目标层
     CCArray *					m_data;
+	
+	CCSize						m_cellSize;
     
 protected: /*SNSTableViewDataSource*/
     //根据indexPath返回tableView的cell

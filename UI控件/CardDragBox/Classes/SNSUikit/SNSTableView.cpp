@@ -32,7 +32,7 @@ bool SNSTableView::initTableViewFrame(CCRect frame, TableViewType types)
     }
     
     m_padding = 1;
-    m_margin = 1; //wgx change 1 to 0.
+    m_margin = 0; //wgx change 1 to 0.
     
     setTableType(types);
     if (!m_tableType) {

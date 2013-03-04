@@ -28,13 +28,16 @@ bool DragLayer::init()
     }
 	//循环生成tableView数据
     CCString *str = NULL;
-    for (int i = 0; i < 500; i++) {
-        str = new CCString("Icon.png");
+    for (int i = 0; i < 40; i++) {
+        str = new CCString("cellBg.jpg");
         m_data->addObject(str);
         str->autorelease();
     }
 	//添加tableView到主界面上
-	SNSTableView *tableView = SNSTableView::create(CCRectMake(0, 20, 300, 260), TableViewTypeHorizontal);
+	CCSprite* cellBg = CCSprite::create("cellBg.jpg");
+	m_cellSize = CCSizeMake(cellBg->getContentSize().width, cellBg->getContentSize().height);
+	
+	SNSTableView *tableView = SNSTableView::create(CCRectMake(0, 20, m_cellSize.width * 2, m_cellSize.height * 4), TableViewTypeHorizontal);
 	tableView->setDelegate(this);
     tableView->setDatasource(this);
 	tableView->setPageEnable(true);
@@ -199,7 +202,7 @@ unsigned int DragLayer::tableViewColumnsOfItemsNumber(SNSTableView* tableView, i
 //定义tableView每一行的高度
 float DragLayer::tableViewHeightForRow(SNSTableView* tableView, SNSIndexPath* indexPath)
 {
-    return 126.0f;
+    return m_cellSize.width;
 }
 
 //横向滑动的时候产生的事件
