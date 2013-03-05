@@ -36,11 +36,12 @@ protected:
 	float					m_speed;			// 移动速度
 	float					m_halfFrameHeight;	// 半个frame的高度
 	int						m_rollPointer;		// 移动指针，判断当前移动到第几个元素了
+	int						m_nowPointer;		// 正面指针，判断当前是第几个元素
 	bool					m_isAdd;			// 判断是否是放大卡牌操作（模拟旋转）
 	bool					m_isSlowDown;		// 是否允许减速（减速的话旋转就会结束）
 	
 public:
-    CC_DEPRECATED_ATTRIBUTE static SNSRollView* initWithFrame(CCRect frame);//DEPRECATED弃用
+    CC_DEPRECATED_ATTRIBUTE static SNSRollView* initWithFrame(CCRect frame);
 	static SNSRollView* create(CCRect frames);
 	
 	// 设置delegate
@@ -57,9 +58,6 @@ public:
 	void stopAtIndex(int index);
 	// 结束播放动画的回调函数
 	void animationDidStop();
-	
-public: /* 重写义父类函数 */
-	virtual void visit();
 	
 };
 

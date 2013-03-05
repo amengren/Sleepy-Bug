@@ -61,12 +61,11 @@ public:
 	CCPoint						m_pos;
 	CCPoint						m_bodyNeedMove;
     
-    //wgx add...
+    //与轻扫有关的操作
     float                       lineK;
     float                       moveMaxDistance;
     float                       moveMax_x;
     float                       moveMax_y;
-    //..........
 	
 	float						m_sliderOpacity;
 	
@@ -75,18 +74,18 @@ public:
 	bool						m_isCanScroll;
     bool                        m_isDraging;
 	bool						m_bounce;
+	
+	// 横向滑动还是纵向滑动
 	CC_PROPERTY(bool, m_horizontal, Horizontal);
 	CC_PROPERTY(bool, m_vertical, Vertical);
+	// 记录是否翻页的bool
+	CC_PROPERTY(bool, m_isPageEnable, PageEnable);
+	// 是否显示滑动条
 	CC_SYNTHESIZE(bool, m_showSlider, ShowSlider);
+	
 	CC_SYNTHESIZE(SNSScrollViewDelegate*, m_delegate, Delegate);
 	// 触碰有效区概念，也就是说在这个区域之中的touch事件我们才响应,与剪裁区域区分开来 add by ver 2.0
 	CC_SYNTHESIZE(CCRect, m_touchEffectiveArea, TouchEffectiveArea);
-	
-	long long                   m_startMoveInterval;
-    long long                   m_startDragInterval;
-    
-    CCLayerColor*               m_sliderRight;
-    CCLayerColor*               m_sliderBottom;
     
 public: /*重定义父类函数*/
     virtual void setFrame(CCRect var);
@@ -100,6 +99,8 @@ public: /*重定义父类函数*/
     virtual void ccTouchCancelled(CCTouch *pTouch, CCEvent *pEvent);
     
     virtual void setIsTouchEnabled(bool enabled);
+	
+	virtual void setVisible(bool isVisible);
     
 protected:
     SNSScrollView();
@@ -107,13 +108,29 @@ protected:
     bool initScrollViewFrame(CCRect frames);
     
 public:
-    CC_DEPRECATED_ATTRIBUTE static SNSScrollView* initWithFrame(CCRect frames);////DEPRECATED弃用
+	// 随着cocos2dx在进化，这个函数可能会弃用
+    CC_DEPRECATED_ATTRIBUTE static SNSScrollView* initWithFrame(CCRect frames);
 	static SNSScrollView* create(CCRect frames);
     
-protected:
+private:
     void updateBody(float delta);
 	int autoLength(int length);
 	long long getLongTimes();
+	
+	CCPoint						m_pageInertia;
+	float						m_nowPageTop, m_nowPageBottom, m_nowPageLeft, m_nowPageRight;
+	CCSize						m_halfWinSize;
+	
+	long long                   m_startMoveInterval;
+    long long                   m_startDragInterval;
+    
+    CCLayerColor*               m_sliderRight;
+    CCLayerColor*               m_sliderBottom;
+	
+	//page效果需要参数
+    int							m_pageCount;						// 总页数
+	int							m_nowPage;							// 当前所在页数
+    bool                        m_pageControl;						// 是否显示翻页控件
     
 protected:
     //绘制滑动条
@@ -127,13 +144,15 @@ protected:
 	//移动body的位置
 	void moveBodyToPosition(CCPoint position);
 	//移动body位置的schdule
-	void moveBodySchedule(CCTimer delta);
+	void moveBodySchedule(float delta);
 	//修正body的复用位置
 	void fixPosition();
     
 public:
     //当scrollView滚动的时候触发的事件
     virtual void scrollViewDidScroll();
+	//当scrollView启用分页功能的时候触发的事件
+	virtual void returnNowPage(int nowPage, int pageCount);
     //当scrollView点击的时候触发的事件
     virtual void scrollViewDidClick(CCPoint position);
     //点scrollView横扫的时候触发的事件
@@ -157,7 +176,15 @@ public:
     void moveBody(CCPoint ratio);
     //启用/禁用拖动操作
     void setMoveEnable(bool isEnable);
+	//移动到指定页面（仅在将isPageEnable启用的时候有效）
+	void moveToPage(int page);
+	//是否设置pageControl控件（待开发）
+    void setPageControl(bool pageControl);
     
+    //dhd
+public:
+    //是否启动Scissor
+    CC_SYNTHESIZE(bool, m_isNoScissor, NoScissor);
 };
 
 #endif // _SNSUIKIT_SNSSCROLLVIEW_H_

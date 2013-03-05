@@ -12,14 +12,19 @@
 SNSTableView::SNSTableView()
 :m_datasource(NULL), m_tableType(TableViewTypeINVALID), m_lazyLoad(false), m_rowCount(0), 
 m_itemCount(0), m_columnCount(0), m_rowMaxInstance(0), m_topPointer(0), m_bottomPointer(0),
-m_minRowWidthOrHeight(0), m_padding(0), m_margin(0), m_lastDragIndex(NULL), m_orientation(ReuseCellOrientationINVALID)
+m_minRowWidthOrHeight(0), m_padding(0), m_margin(0), m_lastDragIndex(NULL), m_orientation(ReuseCellOrientationINVALID),
+m_selectType(TableViewSelectTypeINVALID), m_selectedItem(NULL), m_itemSize(CCSizeZero)
+//dhd
+,m_isAllMaxInstance(false),m_moveAnimationDuration(1.0f)
 {
-    
+	
 }
 
 SNSTableView::~SNSTableView()
 {
-    
+	if (NULL != m_selectedItem) {
+		CC_SAFE_DELETE(m_selectedItem);
+	}
 }
 
 bool SNSTableView::initTableViewFrame(CCRect frame, TableViewType types)
@@ -29,7 +34,7 @@ bool SNSTableView::initTableViewFrame(CCRect frame, TableViewType types)
     }
     
     m_padding = 1;
-    m_margin = 1; //wgx change 1 to 0.
+    m_margin = 0; //wgx change 1 to 0.
     
     setTableType(types);
     if (!m_tableType) {
@@ -49,14 +54,14 @@ SNSTableView* SNSTableView::initWithFrame(CCRect frame, TableViewType types)
 
 SNSTableView* SNSTableView::create(CCRect frame, TableViewType types)
 {
-	SNSTableView* pRet = new SNSTableView();
+	SNSTableView* instance = new SNSTableView();
     
-    if ( pRet && pRet->initTableViewFrame(frame, types) ) {
-        pRet->autorelease();
-        return pRet;
+    if (instance && instance->initTableViewFrame(frame, types) ) {
+        instance->autorelease();
+        return instance;
     }
-    CC_SAFE_DELETE(pRet);
-    return pRet;
+    CC_SAFE_DELETE(instance);
+    return instance;
 }
 
 TableViewType SNSTableView::getTableType()
@@ -81,6 +86,25 @@ void SNSTableView::setTableType(TableViewType var)
     }
 }
 
+TableViewSelectType SNSTableView::getSelectType()
+{
+	return m_selectType;
+}
+
+void SNSTableView::setSelectType(TableViewSelectType var)
+{
+	m_selectType = var;
+	// 根据cell的数量初始化选中数组
+	if (NULL != m_selectedItem) {
+		CC_SAFE_DELETE(m_selectedItem);
+	}
+	m_selectedItem = new bool[m_itemCount];
+	// 默认全部置false
+	for (int i = 0; i < m_itemCount; i++) {
+		m_selectedItem[i] = false;
+	}
+}
+
 void SNSTableView::onEnterTransitionDidFinish()
 {
     SNSScrollView::onEnterTransitionDidFinish();
@@ -90,35 +114,89 @@ void SNSTableView::onEnterTransitionDidFinish()
     }
 }
 
-void SNSTableView::reloadData()
+void SNSTableView::reloadData(bool fullReload)
 {
 	// 停止滚动，防止因为修改指针而崩溃
 	stopScroll();
-	// 清理body上的所有child
-    m_body->removeAllChildrenWithCleanup(true);
-	m_itemCount = 0;
-	m_rowCount = 0;
-	m_columnCount = 0;
-    
-	//清空移动指针
-	m_topPointer = 0;
-	m_bottomPointer = 0;
-    
-	//重设body的position
-    setBodySize(CCSizeMake(0, 0));
-    loadData();
+	if (fullReload) {
+		// 清理body上的所有child
+		m_body->removeAllChildrenWithCleanup(true);
+		m_itemCount = 0;
+		m_rowCount = 0;
+		m_columnCount = 0;
+		
+		//清空移动指针
+		m_topPointer = 0;
+		m_bottomPointer = 0;
+		
+		//重设body的position
+		setBodySize(CCSizeMake(0, 0));
+		loadData();
+	} else {
+		int lastRowCount = m_rowCount;
+		// 重算item数
+		if ( m_datasource ) {
+			m_itemCount = m_datasource->tableViewAllItemsNumber(this, 1);
+		} else {
+			m_itemCount = 0;
+		}
+		// 根据cell的数量初始化选中数组
+		if (NULL != m_selectedItem) {
+			CC_SAFE_DELETE(m_selectedItem);
+		}
+		m_selectedItem = new bool[m_itemCount];
+		// 默认全部置false
+		for (int i = 0; i < m_itemCount; i++) {
+			m_selectedItem[i] = false;
+		}
+		
+		//获取当前tableView的列数
+		if ( m_datasource ) {
+			m_columnCount = m_datasource->tableViewColumnsOfItemsNumber(this, 1);
+		} else {
+			m_columnCount = 1;
+		}
+		
+		//然后计算当前的行数
+		m_rowCount = (int)((float)m_itemCount / (float)m_columnCount + 0.9999f);
+		
+		// 如果两次的行数不一样，证明数据量发生了变化，那么重新刷新数据
+		if (lastRowCount != m_rowCount) {
+			return reloadData();
+		}
+		
+		//遍历指针之间的区域，刷新item
+		for (int i = m_topPointer; i < m_bottomPointer; i++) {
+			SNSTableViewCell *cell = (SNSTableViewCell *)m_body->getChildByTag(i);
+			if (cell) {
+				// 如果cell存在的话reset cell的item数据
+				moveCellToIndexPath(cell, cell->getIndexPath());
+			}
+		}
+		//最后停止自己未结束的滑动
+		stopScroll();
+		fixPosition();
+	}
 }
 
 void SNSTableView::loadData()
 {
     float nowLength = 0;
-    
-	//NSLog(@"m_queue:%@", [m_cellQueue description]);
     //获取当前所有tableView的item数量
 	if ( m_datasource ) {
         m_itemCount = m_datasource->tableViewAllItemsNumber(this, 1);
 	} else {
 		m_itemCount = 0;
+	}
+	
+	// 根据cell的数量初始化选中数组
+	if (NULL != m_selectedItem) {
+		CC_SAFE_DELETE(m_selectedItem);
+	}
+	m_selectedItem = new bool[m_itemCount];
+	// 默认全部置false
+	for (int i = 0; i < m_itemCount; i++) {
+		m_selectedItem[i] = false;
 	}
     
 	//获取当前tableView的列数
@@ -129,12 +207,12 @@ void SNSTableView::loadData()
 	}
     
 	//然后计算当前的行数
-	m_rowCount = (int)((float)m_itemCount/(float)m_columnCount + 0.9999f);
+	m_rowCount = (int)((float)m_itemCount / (float)m_columnCount + 0.9999f);
     
     //计算总高度
 	setScrollWidthOrHeight();
     //设置底部指针位置
-	if (m_rowCount <= m_rowMaxInstance) m_bottomPointer = m_rowCount;
+	if (m_rowCount == m_rowMaxInstance + 1 || m_rowCount <= m_rowMaxInstance) m_bottomPointer = m_rowCount;
     //设置顶部指针
 	for (int i = 0; i < m_rowCount; i++) {
 		if (i == 0) {
@@ -206,6 +284,11 @@ void SNSTableView::setScrollWidthOrHeight()
 		m_rowMaxInstance = (int)(m_frame.size.width / m_minRowWidthOrHeight + 0.9999f);
         
 	}
+    
+    //dhd 如果显示所有实例的话
+    if ( m_isAllMaxInstance ) {
+        m_rowMaxInstance = m_rowCount;
+    }
 }
 
 SNSTableViewCell* SNSTableView::getCellByIndexPath(SNSIndexPath* indexPath)
@@ -243,6 +326,48 @@ bool SNSTableView::indexPathInArea(SNSIndexPath *indexPath)
 	return false;
 }
 
+bool SNSTableView::selectItemByIndexPath(SNSIndexPath *indexPath)
+{
+	if (indexPathInArea(indexPath)) {
+		SNSTableViewCellItem *item = getItemByIndexPath(indexPath);
+		if (item) {
+			switch (m_selectType) {
+				case TableViewSelectTypeSingle:
+				{
+					// 默认取消选中body中的所有子item
+					CCObject *obj = NULL;
+					CCARRAY_FOREACH(m_body->getChildren(), obj) {
+						SNSTableViewCell *cell = (SNSTableViewCell *)obj;
+						if (cell) {
+							for (int j = 0; j < m_columnCount; j++) {
+								SNSTableViewCellItem *item = (SNSTableViewCellItem*)cell->getChildByTag(j);
+								if (item) {
+									item->setSelected(false);
+								}
+							}
+						}
+					}
+					//单选直接选中
+					item->setSelected(true);
+				}
+					break;
+				case TableViewSelectTypeMulti:
+				{
+					// 多选的时候才可以取消
+					item->setSelected(!item->getSelected());
+				}
+					break;
+				default:
+					break;
+			}
+			
+			m_selectedItem[getItemPointerWithIndexPath(indexPath)] = item->getSelected();
+			return true;
+		}
+	}
+	return false;
+}
+
 //复用cell
 SNSTableViewCell* SNSTableView::dequeueReusableCellWithIdentifier(const char* cellIdentifier)
 {
@@ -274,6 +399,8 @@ SNSTableViewCell* SNSTableView::dequeueReusableCellWithIdentifier(const char* ce
 		int tag = indexPath->getRow();
 		CCAssert(tag >= 0, "tag must be more than equal to 0");
 		cell->setTag(tag);
+		// 重设cell的indexPath
+		cell->setIndexPath(indexPath);
 		// 重新设置cell的zindex以做到上压下
 		cell->getParent()->reorderChild(cell, -tag);
 		//CCLOG("cell.tag:%d", cell->getTag);
@@ -330,32 +457,47 @@ void SNSTableView::moveCellToIndexPath(SNSTableViewCell *cell, SNSIndexPath *ind
 		cell->setContentSize(CCSizeMake(widthOrHeight, scrollHeight - (m_padding << 1)));
 		cell->setPosition(ccp((i + 1) * (widthOrHeight + m_margin) - (widthOrHeight + m_margin), m_padding));
 	}
-	//	CCFadeIn *fadeTo = [CCFadeIn actionWithDuration:0.1f];
-	//	[cell runAction:fadeTo];
-	//CCLOG(@"move %d to:%d", cell.tag, i);
-	// 如果没有实例化过tableViewCellItem那么实例化它
+	//CCLOG("move %d to:%d", cell->getTag(), i);
+	// 如果没有实例化过tableViewCellItem那么实例化它(复用情况下只能在这里实例化item)
 	SNSTableViewCellItem *item = NULL;
 	SNSIndexPath *newIndexPath = NULL;
+	// 根据横纵设置item的contentSize
+	if (m_tableType == TableViewTypeVertical) {
+		m_itemSize = CCSizeMake(cell->getContentSize().width / m_columnCount, widthOrHeight);
+	} else if (m_tableType == TableViewTypeHorizontal) {
+		m_itemSize = CCSizeMake(widthOrHeight, cell->getContentSize().height / m_columnCount);
+	}
+	// 没辙，必须在这里设置cell的Item
+	int nowCount;
 	for (int j = 0; j < m_columnCount; j++) {
 		if (NULL == m_datasource) break;
 		newIndexPath = SNSIndexPath::create(indexPath->getRow(), j, indexPath->getSection());
-		
+		nowCount = getItemPointerWithIndexPath(newIndexPath);
+		// 无论如何都要去执行一下取item的方法，否则初始化会有问题
 		item = m_datasource->tableViewItemForCell(this, newIndexPath);
 		CCAssert(item, "If you overwrited delegate method:\"ItemForCellAtIndexPath\", so this function should not return a NULL value!");
-		int nowCount = getItemPointerWithIndexPath(newIndexPath);
+		item->setContentSize(m_itemSize);
+		item->setIndexPath(newIndexPath);
+		
+		if (nowCount >= m_itemCount) {
+			// 如果当前读取的数据已经大于总数据量了，那么隐藏当前item
+			item->setVisible(false);
+		} else {
+			// 否则显示他，并且做重置操作
+			item->setVisible(true);
+		}
 		if (NULL == cell->getChildByTag(j)) {
-			if (nowCount >= m_itemCount) break;
 			cell->addChild(item, 0, j);
 			item->setPosition(getItemPositionWithIndexPath(newIndexPath, widthOrHeight));
-		} else if (NULL != cell->getChildByTag(j) && nowCount >= m_itemCount) {
-			item->removeFromParentAndCleanup(true);
+			//CCLOG("item.width:%f, item.height:%f", item->getContentSize().width, item->getContentSize().height);
 		}
+//		else {
+//			// 否则移除这个item
+//			item->removeFromParentAndCleanup(true);
+//		}
 	}
-	
-	//	//如果已经过了底部指针的渲染范围，那么将他的visible设置为no
-	//	if (self.lazyLoad && m_bottomPointer > 0 && i > (m_bottomPointer + 2)) {
-	//		cell->setVisible(false);
-	//	}
+	// 为了保证indexPath一直正确，所以最后再设置cell的indexPath（因为有可能这个indexPath是来自cell的indexPath，具体看代码）
+	cell->setIndexPath(indexPath);
 }
 
 //复用item
@@ -365,13 +507,14 @@ SNSTableViewCellItem* SNSTableView::dequeueReusableCellItemForIndexPath(SNSIndex
 	SNSTableViewCell *cell = (SNSTableViewCell *)m_body->getChildByTag(row);
 	SNSTableViewCellItem *item = (SNSTableViewCellItem *)cell->getChildByTag(indexPath->getColumn());
 	if (item) {
-		// CCLOG("item::::::::::::%d, row:%d", indexPath->getColumn(), row);
+//		CCLOG("item::::::::::::%d, row:%d", indexPath->getColumn(), row);
 		// 判断item是否是cellItem子类
-//		if (typeid(item) == typeid(SNSTableViewCellItem)) {
-//			//只复用格子，内容物重新获取
-//			item->removeAllChildrenWithCleanup(true);
-//		}
-		/* 这里不需要移除所有内容，需要移除的话去delegate函数中移除 */
+		if (typeid(*item) == typeid(SNSTableViewCellItem)) {
+			//只复用格子，内容物重新获取
+			item->removeAllChildrenWithCleanup(true);
+		}
+		//根据记录判断是否应该让他选中
+		item->setSelected(m_selectedItem[getItemPointerWithIndexPath(indexPath)]);
 		return item;
 	}
 	return NULL;
@@ -388,9 +531,9 @@ float SNSTableView::getRowWidthOrHeight(SNSIndexPath* indexPath)
 
 float SNSTableView::getCellPositionWithIndexPath(SNSIndexPath *indexPath)
 {
-	unsigned int i = indexPath->getRow();
+	unsigned int row = indexPath->getRow();
 	float returnValue = 0;
-	for (int j = 0; j < i; j++) {
+	for (int j = 0; j < row; j++) {
 		returnValue += (getRowWidthOrHeight(SNSIndexPath::create(j, 0, 1)) + m_margin);
 	}
 	return returnValue;
@@ -410,7 +553,8 @@ CCPoint SNSTableView::getItemPositionWithIndexPath(SNSIndexPath* indexPath, floa
 		point = ccp(xyValue, widthOrHeight * 0.5f);
         
 	} else if (m_tableType == TableViewTypeHorizontal) {
-        
+		// 为了让横屏的时候计算从上向下走
+        column = m_columnCount - 1 - column;
 		xyValue = (int)(m_bodySize.height / m_columnCount + 0.5f);
 		xyValue = xyValue * column + xyValue * 0.5f;
 		point = ccp(widthOrHeight * 0.5f, xyValue);
@@ -422,29 +566,48 @@ CCPoint SNSTableView::getItemPositionWithIndexPath(SNSIndexPath* indexPath, floa
 
 unsigned int SNSTableView::getItemPointerWithIndexPath(SNSIndexPath* indexPath)
 {
-	unsigned int pointer = 0;
-	if ( 0 == indexPath->getRow() ) {
-		pointer = indexPath->getColumn();
-	} else {
-		pointer = (indexPath->getRow() * m_columnCount) + indexPath->getColumn();
+	int pointer = -1;
+	if (indexPath) {
+		if ( 0 == indexPath->getRow() ) {
+			pointer = indexPath->getColumn();
+		} else {
+			pointer = (indexPath->getRow() * m_columnCount) + indexPath->getColumn();
+		}
 	}
 	return pointer;
 }
 
-void SNSTableView::moveToIndexPath(SNSIndexPath* indexPath)
+CCSize SNSTableView::getItemSize()
+{
+	return m_itemSize;
+}
+
+void SNSTableView::moveToIndexPath(SNSIndexPath* indexPath, bool _animation)
 {
 	SNSTableViewCell *cell = (SNSTableViewCell *)m_body->getChildByTag(indexPath->getRow());
-	CCPoint pos;
+	CCPoint pos = ccp(0, -m_bodySize.height + m_frame.size.height);
 	if (cell) {
 		if (m_tableType == TableViewTypeVertical) {
             pos = ccp(m_body->getPosition().x, -cell->getPosition().y + cell->getContentSize().height * 0.5f + m_margin);
+			if (pos.y > 0) {
+				pos = CCPointZero;
+			}
 		} else if (m_tableType == TableViewTypeHorizontal) {
             pos = ccp(-cell->getPosition().x, m_body->getPosition().y);
+			if (pos.x > 0) {
+				pos = CCPointZero;
+			}
 		}
-	} else {
-        pos = ccp(0, -m_bodySize.height + m_frame.size.height);
 	}
+	
 	moveBodyToPosition(pos);
+    
+    //dhd
+    if ( _animation ) {
+        m_body->runAction(CCMoveTo::create(m_moveAnimationDuration, pos));
+    } else {
+        moveBodyToPosition(pos);
+    }
 }
 
 #pragma mark - overwrite parent method
@@ -478,23 +641,15 @@ void SNSTableView::scrollViewDidScroll() {
 		if (scrollPos > topCellPos) {
 			if (m_bottomPointer < m_rowCount) {
 				++m_bottomPointer;
-//				if (m_lazyLoad) {
-//					((SNSTableViewCell *)m_body)->getChildByTag(m_topPointer - 1)->setVisible(false);
-//					((SNSTableViewCell *)m_body)->getChildByTag(m_bottomPointer + 1)->setVisible(true);
-//				}
 				reuseCellForOrientation(ReuseCellOrientationAfter);
 				++m_topPointer;
-				//CCLOG(@"top:%d bottom:%d isAfter", m_topPointer, m_bottomPointer);
+				//CCLOG("top:%d bottom:%d isAfter", m_topPointer, m_bottomPointer);
 			}
 		}
 		// 如果是body向下或向右滑动的话
 		if (scrollPos < (topCellPos - topCellWidthOrHeight)) {
 			if (m_topPointer > 0) {
 				--m_topPointer;
-//				if (m_lazyLoad) {
-//					((SNSTableViewCell *)m_body)->getChildByTag(m_topPointer - 1)->setVisible(true);
-//					((SNSTableViewCell *)m_body)->getChildByTag(m_bottomPointer + 1)->setVisible(false);
-//				}
 				reuseCellForOrientation(ReuseCellOrientationBefore);
 				--m_bottomPointer;
 				//CCLOG(@"top:%d bottom:%d isBefore", m_topPointer, m_bottomPointer);
@@ -503,9 +658,16 @@ void SNSTableView::scrollViewDidScroll() {
     }
 }
 
+void SNSTableView::returnNowPage(int nowPage, int pageCount)
+{
+	if (m_delegate) {
+		((SNSTableViewDelegate *)m_delegate)->tableViewAtPage(this, nowPage, pageCount);
+	}
+}
+
 void SNSTableView::scrollViewDidClick(CCPoint position)
 {
-	//NSLog(@"点击：%f ** %f", position.x, position.y);
+	//NSLog("点击：%f ** %f", position.x, position.y);
 	CCRect frame;
     
 	//如果delegate实现了点击函数那么进行处理，否则什么都不干！
@@ -517,9 +679,9 @@ void SNSTableView::scrollViewDidClick(CCPoint position)
 			SNSTableViewCell *cell = (SNSTableViewCell *)m_body->getChildByTag(i);
             
 			frame = CCRectMake(cell->getPosition().x, cell->getPosition().y, cell->getContentSize().width, cell->getContentSize().height);
-			//NSLog(@"frame:%f ++ %f ++ %f ++ %f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+			//NSLog("frame:%f ++ %f ++ %f ++ %f", frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
             
-			if( /*frame.containsPoint(position)*/CCRect::CCRectContainsPoint(frame, position)) {
+			if( frame.containsPoint(position) ) {
                 
 				//NSLog(@"点击了第%d个cell", i);
 				SNSIndexPath *indexPath = SNSIndexPath::create(i, 0);
@@ -540,7 +702,7 @@ void SNSTableView::scrollViewDidClick(CCPoint position)
 						itemSize = CCSizeMake(cell->getContentSize().width, 0);
 					}
                     
-					if ( /*itemFrame.containsPoint(position) */ CCRect::CCRectContainsPoint(itemFrame, position)) {
+					if ( itemFrame.containsPoint(position) ) {
                         
 						SNSIndexPath *itemIndexPath = SNSIndexPath::create(i, j, 0);
                         
@@ -588,7 +750,7 @@ void SNSTableView::scrollViewCellDeleteAction(SNSScrollView* scrollView, CCPoint
             
 			frame = CCRectMake(cell->getPosition().x, cell->getPosition().y, cell->getContentSize().width, cell->getContentSize().height);
             
-			if( /*frame.containsPoint(position)*/CCRect::CCRectContainsPoint(frame, position)) {
+			if( frame.containsPoint(position) ) {
                 
 				//NSLog(@"点击了第%d个cell", i);
 				SNSIndexPath *indexPath = SNSIndexPath::create(i, 0);
@@ -609,7 +771,7 @@ void SNSTableView::scrollViewCellDeleteAction(SNSScrollView* scrollView, CCPoint
 						itemSize = CCSizeMake(cell->getContentSize().width, 0);
 					}
                     
-					if ( /*itemFrame.containsPoint(position)*/CCRect::CCRectContainsPoint(itemFrame, position)) {
+					if ( itemFrame.containsPoint(position) ) {
                         
 						SNSIndexPath *itemIndexPath = SNSIndexPath::create(i, j, 0);
                         
@@ -650,7 +812,7 @@ void SNSTableView::scrollViewDidStartDrag(CCPoint position)
             
 			frame = CCRectMake(cell->getPosition().x, cell->getPosition().y, cell->getContentSize().width, cell->getContentSize().height);
             
-			if( /*frame.containsPoint(position)*/CCRect::CCRectContainsPoint(frame, position) ) {
+			if( frame.containsPoint(position) ) {
                 
 				//NSLog(@"点击了第%d个cell", i);
 				SNSIndexPath *indexPath = SNSIndexPath::create(i, 0);
@@ -671,7 +833,7 @@ void SNSTableView::scrollViewDidStartDrag(CCPoint position)
 						itemSize = CCSizeMake(cell->getContentSize().width, 0);
 					}
                     
-					if (/* itemFrame.containsPoint(position)*/CCRect::CCRectContainsPoint(itemFrame, position)) {
+					if ( itemFrame.containsPoint(position) ) {
                         
 						SNSIndexPath *itemIndexPath = SNSIndexPath::create(i, j, 0);
                         

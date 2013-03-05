@@ -9,26 +9,27 @@
 #include "SNSTableViewCell.h"
 
 SNSTableViewCell::SNSTableViewCell()
-:m_identifier(NULL)
+:m_identifier(NULL), m_indexPath(NULL)
 {}
 
 SNSTableViewCell::~SNSTableViewCell()
 {
-    CC_SAFE_DELETE(m_identifier);
+    CC_SAFE_RELEASE_NULL(m_identifier);
+	setIndexPath(NULL);
 }
 
 bool SNSTableViewCell::initTableViewCell(const char* CellIdentifier)
 {
-//    if ( !CCLayer::init() ) {
-//        return false;
-//    }
-    if ( !CCLayerColor::initWithColor(ccc4f(255, 255, 255, 0)) ) {
+    if ( !CCLayer::init() ) {
         return false;
     }
-     
-    CC_SAFE_DELETE(m_identifier);
-    m_identifier = new CCString(CellIdentifier);
+//    if ( !CCLayerColor::initWithColor(ccc4(255, 255, 255, 0)) ) {
+//        return false;
+//    }
     
+    CC_SAFE_DELETE(m_identifier);
+    m_identifier = CCString::create(CellIdentifier);
+    m_identifier->retain();
     return true;
 }
 SNSTableViewCell* SNSTableViewCell::initWithReuseIdentifier(const char* CellIdentifier)
@@ -46,4 +47,19 @@ SNSTableViewCell* SNSTableViewCell::create(const char* CellIdentifier)
     }
     CC_SAFE_DELETE(pRet);
     return NULL;
+}
+
+#pragma mark - setContentSize
+
+void SNSTableViewCell::setContentSize(CCSize contentSize)
+{
+	CCLayer::setContentSize(contentSize);
+	CCArray *childs = this->getChildren();
+	// 单个item位置纠正
+	if (childs && childs->count() == 1) {
+		CCNode *child = (CCNode *)childs->objectAtIndex(0);
+		if (child) {
+			child->setPosition(contentSize.width * 0.5f, contentSize.height * 0.5f);
+		}
+	}
 }

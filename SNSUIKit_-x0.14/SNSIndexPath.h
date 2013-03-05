@@ -28,9 +28,8 @@ protected:
     bool initIndexPath(unsigned int row, unsigned int column, unsigned int section);
     
 public:
-    CC_DEPRECATED_ATTRIBUTE static SNSIndexPath* indexPathForRow(unsigned int row, unsigned int section);////DEPRECATED弃用
-    CC_DEPRECATED_ATTRIBUTE static SNSIndexPath* indexPathForRow(unsigned int row, unsigned int column, unsigned int section);////DEPRECATED弃用
-    
+    CC_DEPRECATED_ATTRIBUTE static SNSIndexPath* indexPathForRow(unsigned int row, unsigned int section);
+    CC_DEPRECATED_ATTRIBUTE static SNSIndexPath* indexPathForRow(unsigned int row, unsigned int column, unsigned int section);
 	static SNSIndexPath* create(unsigned int row, unsigned int section);
     static SNSIndexPath* create(unsigned int row, unsigned int column, unsigned int section);
     //打印

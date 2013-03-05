@@ -10,11 +10,12 @@
 #define _SNSUIKIT_SNSTABLEVIEWCELL_H_
 
 #include "cocos2d.h"
+#include "SNSIndexPath.h"
 
 USING_NS_CC;
 
 
-class SNSTableViewCell : public CCLayerColor //public CCLayer
+class SNSTableViewCell : public CCLayer //public CCLayer
 {
 public:
 	CCString*       m_identifier;
@@ -25,9 +26,14 @@ protected:
     bool initTableViewCell(const char* CellIdentifier);
     
 public:
-    CC_DEPRECATED_ATTRIBUTE static SNSTableViewCell* initWithReuseIdentifier(const char* CellIdentifier);//DEPRECATED弃用
-    
+	CC_DEPRECATED_ATTRIBUTE static SNSTableViewCell* initWithReuseIdentifier(const char* CellIdentifier);
 	static SNSTableViewCell* create(const char* CellIdentifier);
+	
+public:
+	CC_SYNTHESIZE_RETAIN(SNSIndexPath*, m_indexPath, IndexPath);
+	
+	// 设置变形
+	virtual void setContentSize(CCSize contentSize);
 };
 
 #endif // _SNSUIKIT_SNSTABLEVIEWCELL_H_

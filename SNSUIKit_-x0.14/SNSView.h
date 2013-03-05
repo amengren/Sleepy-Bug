@@ -13,7 +13,7 @@
 
 USING_NS_CC;
 
-class SNSView : public CCLayerColor {
+class SNSView : public CCLayer /*CCLayerColor*/{
 public:
 	CC_PROPERTY(CCRect, m_frame, Frame);
 	CC_PROPERTY(CCSize,	m_bodySize, BodySize);
@@ -22,7 +22,7 @@ protected:
     bool initViewFrame(CCRect frame);
 	
 public:
-    CC_DEPRECATED_ATTRIBUTE static SNSView* initWithFrame(CCRect frame);////DEPRECATED弃用
+	CC_DEPRECATED_ATTRIBUTE static SNSView* initWithFrame(CCRect frame);
 	static SNSView* create(CCRect frame);
     
 };

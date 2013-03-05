@@ -16,12 +16,18 @@ int sliderMargin = 0;
 #define SPACE_TIME (200000)   //触发点击的最小时间(微秒，1000000为一秒)
 #define INVALID_TIME (1000000)
 
+//dhd
+#define PAGE_MIN (8) //翻页最小移动像素
+
 SNSScrollView::SNSScrollView()
-:m_body(NULL),m_sliderOpacity(0.0),m_startMoveInterval(0.0),m_startDragInterval(0.0),m_delegate(NULL),
+:m_body(NULL), m_sliderOpacity(0.0), m_startMoveInterval(0.0), m_startDragInterval(0.0), m_delegate(NULL),
 m_sliderRight(NULL), m_sliderBottom(NULL),
-m_isCanScroll(false),m_isDraging(false),m_bounce(false),m_horizontal(false),m_vertical(false),m_showSlider(false)
+m_isCanScroll(false), m_isDraging(false), m_bounce(false), m_horizontal(false), m_vertical(false),
+m_showSlider(false), m_isPageEnable(false)
+//dhd
+,m_isNoScissor(false)
 {
-    m_frame = CCRectMake(0, 0, 0, 0);
+    m_frame = CCRectZero;
     m_scrollInertia = CCPointZero;
 	m_bodyRealPoint = CCPointZero;
 	m_scrollStartVector = CCPointZero;
@@ -29,6 +35,15 @@ m_isCanScroll(false),m_isDraging(false),m_bounce(false),m_horizontal(false),m_ve
 	m_pos = CCPointZero;
 	m_touchEffectiveArea = CCRectZero;
 	m_bodyNeedMove = CCPointZero;
+	
+	m_pageInertia = CCPointZero;
+	m_nowPageTop = 0;
+	m_nowPageBottom = 0;
+	m_nowPageLeft = 0;
+	m_nowPageRight = 0;
+	m_pageCount = 1;
+	m_nowPage = 1;
+	m_pageControl = false;
 }
 
 SNSScrollView::~SNSScrollView()
@@ -38,7 +53,7 @@ SNSScrollView::~SNSScrollView()
 
 bool SNSScrollView::initScrollViewFrame(CCRect frames)
 {
-    if ( !SNSView::initWithColor(ccc4f(0, 0, 0, 0)) ) {
+    if ( !SNSView::init() ) {
         return false;
     }
 	
@@ -46,8 +61,8 @@ bool SNSScrollView::initScrollViewFrame(CCRect frames)
 	sliderMargin = autoLength(1);
 
     //setIsRelativeAnchorPoint(true);
-    setAnchorPoint(ccp(0, 0));
-    m_scrollInertia = ccp(0, 0);
+    this->setAnchorPoint(CCPointZero);
+    m_scrollInertia = CCPointZero;
     m_isCanScroll = false;
     m_bounce = true;
     
@@ -56,9 +71,9 @@ bool SNSScrollView::initScrollViewFrame(CCRect frames)
     setHorizontal(true);
     m_showSlider = true;
     
-    m_body = CCLayer::node();
-    m_body->setIsRelativeAnchorPoint(true);
-    m_body->setAnchorPoint(ccp(0.f, 0.f));
+    m_body = CCLayer::create();
+    //m_body->setIsRelativeAnchorPoint(true);
+    m_body->setAnchorPoint(CCPointZero);
     addChild(m_body, 0, ScrollViewChildTypeBody);
     
     m_status = ScrollViewStatusNormal;
@@ -78,14 +93,14 @@ SNSScrollView* SNSScrollView::initWithFrame(CCRect frames)
 
 SNSScrollView* SNSScrollView::create(CCRect frames)
 {
-    SNSScrollView* pRet = new SNSScrollView();
-    
-    if ( pRet && pRet->initScrollViewFrame(frames) ) {
-        pRet->autorelease();
-        return pRet;
-    }
-	CC_SAFE_DELETE(pRet);
-    return NULL;
+	SNSScrollView* instance = new SNSScrollView();
+	
+	if (instance && instance->initScrollViewFrame(frames)) {
+		instance->autorelease();
+		return instance;
+	}
+	CC_SAFE_DELETE(instance);
+	return NULL;
 }
 
 #pragma mark - slider public function
@@ -119,8 +134,8 @@ void SNSScrollView::drawSlider()
 	sliderBottomWidth = (m_frame.size.width - sliderMargin * 2) *  m_frame.size.width / m_bodySize.width;
     
 	if (!m_sliderRight) {
-		m_sliderRight = CCLayerColor::layerWithColor(ccc4f(155, 155, 155, 0));
-        m_sliderRight->setIsVisible(false);
+		m_sliderRight = CCLayerColor::create(ccc4(155, 155, 155, 0));
+        m_sliderRight->setVisible(false);
 		m_sliderRight->setAnchorPoint(ccp(0, 0));
         addChild(m_sliderRight, 128, ScrollViewChildTypeRightSlider);
 	}
@@ -129,8 +144,8 @@ void SNSScrollView::drawSlider()
 	m_sliderRight->setPosition(ccp(m_frame.size.width - sliderWidth - sliderMargin, m_frame.size.height - sliderRightHeight - sliderMargin));
     
 	if (!m_sliderBottom) {
-		m_sliderBottom = CCLayerColor::layerWithColor(ccc4f(155, 155, 155, 0));
-		m_sliderBottom->setIsVisible(false);
+		m_sliderBottom = CCLayerColor::create(ccc4(155, 155, 155, 0));
+		m_sliderBottom->setVisible(false);
 		m_sliderBottom->setAnchorPoint(ccp(0, 0));
         addChild(m_sliderBottom, 128, ScrollViewChildTypeBottomSlider);
 	}
@@ -143,7 +158,7 @@ void SNSScrollView::drawSlider()
 //显示slider
 void SNSScrollView::showSliders()
 {
-    if (!m_showSlider) return;
+    if (!m_showSlider || m_isPageEnable) return;
 	//CCFadeTo *fade = [CCFadeTo actionWithDuration:0.01f opacity:m_sliderOpacity);
 	if (m_vertical) {
         m_sliderRight->setOpacity(m_sliderOpacity);
@@ -158,13 +173,13 @@ void SNSScrollView::hideSliders()
 {
     this->unschedule(schedule_selector(SNSScrollView::hideSliders));
     
-    if (!m_showSlider) return;
+    if (!m_showSlider || m_isPageEnable) return;
     
 	if (m_vertical) {
-		m_sliderRight->runAction(CCFadeTo::actionWithDuration(0.3f, 0));
+		m_sliderRight->runAction(CCFadeTo::create(0.3f, 0));
 	}
 	if (m_horizontal) {
-		m_sliderBottom->runAction(CCFadeTo::actionWithDuration(0.3f, 0));
+		m_sliderBottom->runAction(CCFadeTo::create(0.3f, 0));
 	}
 }
 
@@ -225,7 +240,7 @@ void SNSScrollView::moveSliders()
 void SNSScrollView::setVertical(bool var)
 {
     m_vertical = var;
-    this->getChildByTag(ScrollViewChildTypeRightSlider)->setIsVisible(m_vertical);
+    this->getChildByTag(ScrollViewChildTypeRightSlider)->setVisible(m_vertical);
 }
 
 bool SNSScrollView::getVertical()
@@ -236,7 +251,7 @@ bool SNSScrollView::getVertical()
 void SNSScrollView::setHorizontal(bool var)
 {
     m_horizontal = var;
-    this->getChildByTag(ScrollViewChildTypeBottomSlider)->setIsVisible(m_horizontal);
+    this->getChildByTag(ScrollViewChildTypeBottomSlider)->setVisible(m_horizontal);
 }
 
 bool SNSScrollView::getHorizontal()
@@ -247,6 +262,7 @@ bool SNSScrollView::getHorizontal()
 void SNSScrollView::setFrame(CCRect var)
 {
     m_frame = var;
+	m_halfWinSize = CCSizeMake(m_frame.size.width*0.5, m_frame.size.height*0.5);
     this->setPosition(ccp(var.origin.x, var.origin.y));
     this->setContentSize(CCSizeMake(var.size.width, var.size.height));
     this->setBodySize(this->getContentSize());
@@ -263,6 +279,19 @@ void SNSScrollView::setBodySize(CCSize var)
 	if (var.height < m_frame.size.height) {
 		var.height = m_frame.size.height;
 	}
+	
+	//如果启用了page效果
+    if (m_isPageEnable) {
+        if (m_vertical) { //如果是纵向移动
+            m_pageCount = (int)(var.height / m_frame.size.height);
+        }else if (m_horizontal){//如果是横向移动
+            m_pageCount = (int)(var.width / m_frame.size.width);
+        }
+        m_nowPage = 1;
+        if (m_pageControl) {
+            //这里的pageControl只是这个暂时的代替量
+        }
+    }
     
 	m_bodySize = var;
 	m_body->setContentSize(CCSizeMake(0, 0));
@@ -275,22 +304,32 @@ void SNSScrollView::setBodySize(CCSize var)
     this->drawSlider();
 }
 
-void SNSScrollView::registerWithTouchDispatcher()
+void SNSScrollView::setVisible(bool isVisible)
 {
-//    CCDirector::sharedDirector()->getTouchDispatcher()->addTargetedDelegate(this, kCCMenuHandlerPriority, true);
-    CCTouchDispatcher::sharedDispatcher()->addTargetedDelegate(this, /*kCCMenuTouchPriority*/-300, true);
+	SNSView::setVisible(isVisible);
+	if (isVisible) {
+		this->setTouchEnabled(true);
+	} else {
+		this->setTouchEnabled(false);
+		this->stopScroll();
+	}
 }
 
 void SNSScrollView::visit()
 {
-    glEnable(GL_SCISSOR_TEST); 
-    CCRect frame = m_frame;
-    //get world point to set the culling
+    //dhd
+    if ( m_isNoScissor ) {
+        SNSView::visit();
+        return;
+    }
+    
+    glEnable(GL_SCISSOR_TEST);
+    
     m_pos = getParent()->convertToWorldSpace(this->getPosition());
-	//frame.origin = ccpAdd(m_pos, frame.origin);
-	glScissor(m_pos.x * CC_CONTENT_SCALE_FACTOR(), m_pos.y * CC_CONTENT_SCALE_FACTOR(), 
-              frame.size.width * CC_CONTENT_SCALE_FACTOR(), frame.size.height * CC_CONTENT_SCALE_FACTOR());
-	
+    
+    float s = this->getScale();
+    CCEGLView::sharedOpenGLView()->setScissorInPoints(m_pos.x*s, m_pos.y*s, m_frame.size.width*s, m_frame.size.height*s);
+    
     SNSView::visit();
 	glDisable(GL_SCISSOR_TEST);
 }
@@ -308,7 +347,7 @@ void SNSScrollView::visit()
 #pragma mark - scrollView move function
 
 void SNSScrollView::updateBody(float delta)
-{	
+{
     //移动惯性设置
 	if (m_bounce && m_status == ScrollViewStatusNormal) {
         
@@ -318,58 +357,172 @@ void SNSScrollView::updateBody(float delta)
         
         scrollViewDidScroll();
         
-        //CCLOG("矢量效果:%f -- %f", m_scrollInertia.x, m_scrollInertia.y);
-        //根据方向判断如果当body位置小于某些值的时候停止自主移动
-        if (m_body->getPosition().x != 0 && (m_body->getPosition().x < -m_bodyRealPoint.x || m_body->getPosition().x > 0)) {
-              m_scrollInertia = ccp(0, m_scrollInertia.y);
-        }
-              
-        if (m_body->getPosition().y != 0 && (m_body->getPosition().y < -m_bodyRealPoint.y || m_body->getPosition().y > 0)) {
-              m_scrollInertia = ccp(m_scrollInertia.x, 0);
-        }
-              
-        //根据获得的矢量缓速移动
-        m_body->setPosition(ccpAdd(m_body->getPosition(), m_scrollInertia));
-        //衰减移动矢量
-        m_scrollInertia = ccpMult(m_scrollInertia, 0.96f);
-              
+		if(m_isPageEnable) {
+            // 如果启用分页那么将移动矢量备份并清空自主移动矢量
+			m_pageInertia = m_scrollInertia;
+			m_scrollInertia = CCPointZero;
+        } else {
+			//CCLOG("矢量效果:%f -- %f", m_scrollInertia.x, m_scrollInertia.y);
+			//根据方向判断如果当body位置小于某些值的时候停止自主移动
+			if (m_body->getPosition().x != 0 && (m_body->getPosition().x < -m_bodyRealPoint.x || m_body->getPosition().x > 0)) {
+				  m_scrollInertia = ccp(0, m_scrollInertia.y);
+			}
+				  
+			if (m_body->getPosition().y != 0 && (m_body->getPosition().y < -m_bodyRealPoint.y || m_body->getPosition().y > 0)) {
+				  m_scrollInertia = ccp(m_scrollInertia.x, 0);
+			}
+				  
+			//根据获得的矢量缓速移动
+			m_body->setPosition(ccpAdd(m_body->getPosition(), m_scrollInertia));
+			//衰减移动矢量
+			m_scrollInertia = ccpMult(m_scrollInertia, 0.96f);
+		}
+        
               
         //保护系统，防止计算出来的数值无限小
         if (m_scrollInertia.x < 0.1f && m_scrollInertia.x > -0.1f) {
-              m_scrollInertia.x = 0;
+              m_scrollInertia.x = 0.f;
         }
               
         if (m_scrollInertia.y < 0.1f && m_scrollInertia.y > -0.1f) {
-            m_scrollInertia.y = 0;
+            m_scrollInertia.y = 0.f;
         }
+        
               
         //如果自主移动已经结束，那么判断是否执行归位的action
         if (m_scrollInertia.x == 0 || m_scrollInertia.y == 0) {
             stopActions();
             
+            //dhd
+            bool isMovePos = true;
+            
             CCPoint pos = m_body->getPosition();
-               
-            if (pos.y < -m_bodyRealPoint.y) {
-                pos.y = -m_bodyRealPoint.y;
-            }
-               
-            if (pos.x < -m_bodyRealPoint.x) {
-                pos.x = -m_bodyRealPoint.x;
+			if(m_isPageEnable) {
+				// 如果pageInertia数值小于一定量，那么不做page移动
+				CCLOG("vx:%f, vy:%f", m_pageInertia.x, m_pageInertia.y);
+                CCLOG("nowpage:%d -- pageCount:%d", m_nowPage, m_pageCount);
+                
+                //dhd 限制移动出一定范围后才翻页
+                if ( abs(m_pageInertia.x) < PAGE_MIN && abs(m_pageInertia.y) < PAGE_MIN ) {
+                    
+                    m_nowPageLeft = m_nowPageRight + m_frame.size.width;
+                    m_nowPageBottom = -m_bodySize.height + (m_nowPage * m_frame.size.height);
+                    
+                    CCPoint pos = ccp(0,0);
+                    if (m_vertical) {
+                        pos = ccp(0, m_nowPageBottom);
+                    }else if (m_horizontal){
+                        pos = ccp(m_nowPageLeft,0);
+                    }
+                    
+                    moveBodyToPosition(pos);
+                    
+                    isMovePos = false;
+                    
+                    m_pageInertia.x = m_pageInertia.y = 0;
+                }
+                
+                
+                if (m_pageInertia.x != 0 || m_pageInertia.y != 0) {
+                    float lastPageCenter = 0, nowPageCenter = 0;
+                    if (m_vertical) {
+                        nowPageCenter = m_nowPageBottom + m_halfWinSize.height;
+                        lastPageCenter = m_nowPageBottom - m_halfWinSize.height;
+                        
+//						CCLOG("now:%f -- last:%f", nowPageCenter, lastPageCenter);
+                        
+                        if(m_nowPage >1 && m_nowPage < m_pageCount){
+                            if (pos.y <= lastPageCenter || m_pageInertia.y < 0) {
+                                pos.y = m_nowPageBottom - m_frame.size.height;
+                                --m_nowPage;
+                            } else if (pos.y > nowPageCenter || m_pageInertia.y > 0) {
+                                pos.y = m_nowPageBottom + m_frame.size.height;
+                                ++m_nowPage;
+                            } else {
+                                pos.y = m_nowPageBottom;
+                            }
+                        } else if (m_nowPage == 1) {
+                            if (pos.y > nowPageCenter || m_pageInertia.y > 0) {
+                                pos.y = m_nowPageBottom + m_frame.size.height;
+                                ++m_nowPage;
+                            } else {
+                                pos.y = m_nowPageBottom;
+                            }
+                        } else if (m_nowPage == m_pageCount) {
+                            if (pos.y <= lastPageCenter || m_pageInertia.y < 0) {
+                                pos.y = m_nowPageBottom - m_frame.size.height;
+                                --m_nowPage;
+                            } else {
+                                pos.y = m_nowPageBottom;
+                            }
+                        }
+                    } else if (m_horizontal) {
+                        lastPageCenter = m_nowPageLeft + m_halfWinSize.width;
+                        nowPageCenter = m_nowPageLeft - m_halfWinSize.width;
+						
+//                        CCLOG("now:%f -- last:%f", nowPageCenter, lastPageCenter);
+                        
+                        if (m_nowPage > 1 && m_nowPage < m_pageCount) {
+                            if (pos.x >= lastPageCenter || m_pageInertia.x > 0) {
+                                pos.x = lastPageCenter + m_halfWinSize.width;
+                                --m_nowPage;
+                            } else if (pos.x < nowPageCenter || m_pageInertia.x < 0){
+                                pos.x = nowPageCenter - m_halfWinSize.width;
+                                ++m_nowPage;
+                            } else {
+                                pos.x = m_nowPageLeft;
+                            }
+                        } else if (m_nowPage ==1) {
+                            if (pos.x < nowPageCenter || m_pageInertia.x < 0) {
+                                pos.x = nowPageCenter - m_halfWinSize.width;
+                                ++m_nowPage;
+                            } else {
+                                pos.x = m_nowPageLeft;
+                            }
+                        } else if (m_nowPage == m_pageCount) {
+                            if (pos.x >= lastPageCenter || m_pageInertia.x > 0) {
+                                pos.x = lastPageCenter + m_halfWinSize.width;
+                                --m_nowPage;
+                            } else {
+                                pos.x = m_nowPageLeft;
+                            }
+                        }
+                    }
+                    if (m_pageControl) {
+                        //self.pageControl.nowPage = m_nowPage;
+                    }
+//					CCLOG("nowpage:%d -- pageCount:%d", m_nowPage, m_pageCount);
+                    
+					returnNowPage(m_nowPage, m_pageCount);
+					moveBodyToPosition(pos);
+                    isMovePos = false;
+                }
+            } else {
+				if (pos.y < -m_bodyRealPoint.y) {
+					pos.y = -m_bodyRealPoint.y;
+				}
+				   
+				if (pos.x < -m_bodyRealPoint.x) {
+					pos.x = -m_bodyRealPoint.x;
+				}
+				
+				if (pos.y * 100 > 0) {
+					pos.y = 0.f;
+				}
+				   
+				if (pos.x * 100 > 0) {
+					pos.x = 0.f;
+				}
+			}
+            
+            //m_scrollInertia = ccpAdd(m_scrollInertia, ccpSub(pos, m_body.position)); //这样做会变成简协振动
+//            CCLOG("pos desc:%f -- %f", pos.x, pos.y);
+            if ( isMovePos ) {
+                CCMoveTo *move = CCMoveTo::create(0.8f, pos);
+                CCEaseExponentialOut *ease = CCEaseExponentialOut::create(move);
+                m_body->runAction(ease);
             }
             
-            if (pos.y > 0) {
-                pos.y = 0;
-            }
-               
-            if (pos.x > 0) {
-                pos.x = 0;
-            }
-               
-            //m_scrollInertia = ccpAdd(m_scrollInertia, ccpSub(pos, m_body.position)); //这样做会变成简协振动
-            //NSLog(@"pos desc:%f -- %f", pos.x, pos.y);
-            CCMoveTo *move = CCMoveTo::actionWithDuration(0.8f, pos);
-            CCEaseExponentialOut *ease = CCEaseExponentialOut::actionWithAction(move);
-            m_body->runAction(ease);
             /*
 			// 这里准备做slider的弹性移动
             if (m_showSlider) {
@@ -429,11 +582,11 @@ void SNSScrollView::stopScroll()
 	if (pos.x < -m_bodyRealPoint.x) {
 		pos.x = -m_bodyRealPoint.x;
 	}
-	if(pos.y > 0) {
-		pos.y = 0;
+	if(pos.y * 100 > 0) {
+		pos.y = 0.0f;
 	}
-	if (pos.x > 0) {
-		pos.x = 0;
+	if (pos.x * 100 > 0) {
+		pos.x = 0.0f;
 	}
     
 	m_body->setPosition(pos);
@@ -452,6 +605,11 @@ void SNSScrollView::stopActions()
 	}
 }
 
+void SNSScrollView::registerWithTouchDispatcher()
+{
+    CCDirector::sharedDirector()->getTouchDispatcher()->addTargetedDelegate(this, kCCMenuHandlerPriority, false);
+}
+
 bool SNSScrollView::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 {
     moveMax_x = 0;
@@ -459,7 +617,7 @@ bool SNSScrollView::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
     moveMaxDistance = 0;
 	//NSLog(@"touch start");
     if ( m_status != ScrollViewStatusCanNotTouch ) {
-        CCPoint touchLocation = pTouch->locationInView();
+        CCPoint touchLocation = pTouch->getLocationInView();
         m_scrollStartVector = m_scrollLastVector = touchLocation = CCDirector::sharedDirector()->convertToGL(touchLocation);
         this->stopActions();
         m_isCanScroll = false;
@@ -469,7 +627,7 @@ bool SNSScrollView::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 			// 如果可点击区域的宽和高都为0，那么给初始默认值
 			m_touchEffectiveArea = CCRectMake(m_pos.x, m_pos.y, m_frame.size.width, m_frame.size.height);
 		}
-		if(CCRect::CCRectContainsPoint(m_touchEffectiveArea,touchLocation)) {
+		if(m_touchEffectiveArea.containsPoint(touchLocation)) {
             this->unscheduleAllSelectors();
             showSliders();
             
@@ -485,8 +643,8 @@ bool SNSScrollView::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 void SNSScrollView::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent) 
 {
 	//NSLog(@"Move body");
-    CCPoint touchLocation = pTouch->locationInView();
-    CCPoint prevLocation = pTouch->previousLocationInView();
+    CCPoint touchLocation = pTouch->getLocationInView();
+    CCPoint prevLocation = pTouch->getPreviousLocationInView();
     
     touchLocation = CCDirector::sharedDirector()->convertToGL(touchLocation);
     prevLocation = CCDirector::sharedDirector()->convertToGL(prevLocation);
@@ -512,10 +670,23 @@ void SNSScrollView::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
             diff.y = 0;
         }
         
-        //如果超过边界区域，移动减半
-        if( m_body->getPosition().y < -m_bodyRealPoint.y || m_body->getPosition().x < -m_bodyRealPoint.x || m_body->getPosition().y > 0 || m_body->getPosition().x > 0 ){
-            diff = ccpMult(diff, 0.5f);
-        }
+		if (m_isPageEnable) {
+            //如果设置分页，移动过页首尾也减半
+            m_nowPageRight = -(m_nowPage * m_frame.size.width);
+            m_nowPageLeft = m_nowPageRight + m_frame.size.width;
+            
+            m_nowPageBottom = -m_bodySize.height + ((m_nowPage) * m_frame.size.height);
+            m_nowPageTop = m_nowPageBottom - m_frame.size.height;
+            
+            if (m_body->getPosition().y > m_nowPageTop || m_body->getPosition().x > m_nowPageRight || m_body->getPosition().y < m_nowPageBottom || m_body->getPosition().x < m_nowPageLeft) {
+                diff = ccpMult(diff, 0.5f);
+            }
+        }else{
+			//如果没有设置分页，且位置超过边界区域，移动减半
+			if( m_body->getPosition().y < -m_bodyRealPoint.y || m_body->getPosition().x < -m_bodyRealPoint.x || m_body->getPosition().y > 0 || m_body->getPosition().x > 0 ){
+				diff = ccpMult(diff, 0.5f);
+			}
+		}
         
         //设置body当前位置
         CCPoint pos = ccpAdd(m_body->getPosition(), diff);
@@ -562,7 +733,7 @@ void SNSScrollView::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
             moveMaxDistance = maxDis;
         }
         //斜率
-        lineK = (touchLocation.y-m_scrollStartVector.y)/(touchLocation.x-m_scrollStartVector.x);
+        lineK = (touchLocation.y - m_scrollStartVector.y) / (touchLocation.x - m_scrollStartVector.x);
 	}
     //判断时间阈值在指定范围内且移动速度小于阈值那么触发拖动开始事件
     if (!m_isDraging && getLongTimes() - m_startDragInterval > SPACE_TIME && getLongTimes() - m_startDragInterval < INVALID_TIME && distance < 10) {
@@ -575,7 +746,7 @@ void SNSScrollView::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent)
 void SNSScrollView::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
 {
     //NSLog(@"移动结束");
-    CCPoint touchLocation = pTouch->locationInView();
+    CCPoint touchLocation = pTouch->getLocationInView();
     touchLocation = CCDirector::sharedDirector()->convertToGL(touchLocation);
     CCPoint moveLength = ccpSub(touchLocation, m_scrollLastVector);
     CCPoint returnPosition = ccpSub(ccpSub(touchLocation, m_pos), m_body->getPosition());
@@ -593,16 +764,16 @@ void SNSScrollView::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
             m_scrollInertia = ccpAdd(m_scrollInertia, ccpMult(moveLength, 0.25f));
             
             if (!m_horizontal) {
-                m_scrollInertia.x = 0;
+                m_scrollInertia.x = 0.f;
             }
             if (!m_vertical) {
-                m_scrollInertia.y = 0;
+                m_scrollInertia.y = 0.f;
             }
             
-            //总移动距离小于10的时候清空移动矢量并触发点击事件
-            if (ccpDistance(touchLocation, m_scrollStartVector) < 10) {
-                //这里判断矢量于0之间的距离如果小于上边10点的位移再乘以衰减系数(用来判断是否是在滑动过程中的点击)
-                if (ccpDistance(m_scrollInertia, CCPointZero) <= 10.0f * 0.4f) {
+            //总移动距离小于30的时候清空移动矢量并触发点击事件
+            if (ccpDistance(touchLocation, m_scrollStartVector) < 20) {
+                //这里判断矢量于0之间的距离如果小于上边30点的位移再乘以衰减系数(用来判断是否是在滑动过程中的点击)
+                if (ccpDistance(m_scrollInertia, CCPointZero) <= 20.0f * 0.6f) {
 					//先清空，否则在移动到指定位置的时候会有问题
 					m_scrollInertia = ccp(0, 0);
                     //如果移动矢量小于一定数值发送点击事件
@@ -611,7 +782,7 @@ void SNSScrollView::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
                     }
                     scrollViewDidClick(returnPosition);
                     return;
-                 }
+				}
                 m_scrollInertia = ccp(0, 0);
             }
         } else {
@@ -624,6 +795,9 @@ void SNSScrollView::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent)
                 m_scrollInertia.x = -0.11;
             } else if (moveLength.y < 0 && m_vertical) {
                 m_scrollInertia.y = -0.11;
+            }
+			if (!m_isPageEnable) {
+                m_scrollInertia = ccp(0,0);
             }
         }
         
@@ -670,6 +844,35 @@ void SNSScrollView::moveBody(CCPoint ratio)
     moveSliders();
 }
 
+void SNSScrollView::moveToPage(int page){
+    
+    if (!m_isPageEnable) {
+        return;
+    }
+    if (m_nowPage == page) {
+        return;
+    }
+    this->unscheduleAllSelectors();
+    m_nowPage = page;
+    if (m_pageControl) {
+		//        self.pageControl.nowPage = m_nowPage;
+		//		[self.pageControl resetControl];
+    }
+    m_nowPageRight = -(m_nowPage * m_frame.size.width);
+    m_nowPageLeft = m_nowPageRight + m_frame.size.width;
+    
+    m_nowPageBottom = -m_bodySize.height + (m_nowPage * m_frame.size.height);
+    m_nowPageTop = m_nowPageBottom - m_frame.size.height;
+    
+    CCPoint pos = ccp(0,0);
+    if (m_vertical) {
+        pos = ccp(0, m_nowPageBottom);
+    }else if (m_horizontal){
+        pos = ccp(m_nowPageLeft,0);
+    }
+    moveBodyToPosition(pos);
+}
+
 void SNSScrollView::setMoveEnable(bool isEnable)
 {
 	if (isEnable) {
@@ -683,7 +886,7 @@ void SNSScrollView::setMoveEnable(bool isEnable)
 
 void SNSScrollView::setIsTouchEnabled(bool enabled)
 {
-    SNSView::setIsTouchEnabled(enabled);
+    SNSView::setTouchEnabled(enabled);
     
 	if (enabled) {
 		if (m_status != ScrollViewStatusCanNotMove) {
@@ -694,12 +897,30 @@ void SNSScrollView::setIsTouchEnabled(bool enabled)
 	}
 }
 
+#pragma mark - pageControl function
+bool SNSScrollView::getPageEnable(){
+    return m_isPageEnable;
+}
+void SNSScrollView::setPageEnable(bool isPageEnable){
+    m_isPageEnable = isPageEnable;
+    if (m_isPageEnable && !m_pageControl) {
+        
+		//        this->setPageControl(pageControl);
+        //构建一个pageControl
+    }
+}
+
+void SNSScrollView::setPageControl(bool pageControl)
+{
+    
+}
+
 #pragma mark - self function
 
 //修正scrollView复用的位置
 void SNSScrollView::fixPosition()
 {
-	m_scrollInertia = ccp(-0.11f, -0.11f);
+	m_scrollInertia = ccp(0.0f, 0.0f);
 	this->schedule(schedule_selector(SNSScrollView::updateBody));
 }
 
@@ -709,38 +930,42 @@ void SNSScrollView::moveBodyToPosition(CCPoint position)
 	this->schedule(schedule_selector(SNSScrollView::moveBodySchedule));
 }
 
-void SNSScrollView::moveBodySchedule(CCTimer delta)
+void SNSScrollView::moveBodySchedule(float delta)
 {
 	// 如果移动到边框了的话停止移动
-	if (m_body->getPosition().x != 0 && (m_body->getPosition().x < -m_bodyRealPoint.x || m_body->getPosition().x > 0)) {
+	if (m_body->getPosition().x != 0 && (m_body->getPosition().x < -m_bodyRealPoint.x || m_body->getPosition().x > 0.1f)) {
 		m_bodyNeedMove = ccp(0, m_bodyNeedMove.y);
 	}
 	
-	if (m_body->getPosition().y != 0 && (m_body->getPosition().y < -m_bodyRealPoint.y || m_body->getPosition().y > 0)) {
+	if (m_body->getPosition().y != 0 && (m_body->getPosition().y < -m_bodyRealPoint.y || m_body->getPosition().y > 0.1f)) {
 		m_bodyNeedMove = ccp(m_bodyNeedMove.x, 0);
+	}
+	// 系统保护，防止计算出来的数值无限小
+	if (m_bodyNeedMove.x < 0.1f && m_bodyNeedMove.x > -0.1f && m_bodyNeedMove.y < 0.1f && m_bodyNeedMove.y > -0.1f) {
+		this->unschedule(schedule_selector(SNSScrollView::moveBodySchedule));
+		//this->fixPosition();
 	}
 	CCPoint subValue = ccpMult(m_bodyNeedMove, 0.2);
 	//设置body当前位置
 	CCPoint pos = ccpAdd(m_body->getPosition(), subValue);
 	
 	//如果不可以bounce的话到边界停止弹动
-	if (!m_bounce) {
+//	if (!m_bounce) { //dhd
 		if(pos.y < -m_bodyRealPoint.y) {
 			pos.y = -m_bodyRealPoint.y;
 		}
 		if (pos.x < -m_bodyRealPoint.x) {
 			pos.x = -m_bodyRealPoint.x;
 		}
-		if(pos.y > 0) {
-			pos.y = 0;
+		if(pos.y * 100 > 0) {
+			pos.y = 0.f;
 		}
-		if (pos.x > 0) {
-			pos.x = 0;
+		if (pos.x * 100 > 0) {
+			pos.x = 0.f;
 		}
-	}
+//	}
 	
-	if (m_status == ScrollViewStatusNormal)
-		m_body->setPosition(pos);
+	if (m_status == ScrollViewStatusNormal) m_body->setPosition(pos);
 	
 	if ( m_delegate ) {
 		m_delegate->scrollViewDidScroll(this);
@@ -748,13 +973,7 @@ void SNSScrollView::moveBodySchedule(CCTimer delta)
 	scrollViewDidScroll();
 	// 等比衰减移动
 	m_bodyNeedMove = ccpSub(m_bodyNeedMove, subValue);
-	//CCLOG("%f -- %f", m_bodyNeedMove.y, subValue.y);
-    
-//	if (m_bodyNeedMove.equals(CCPointZero)) {
-    if(m_bodyNeedMove.x==CCPointZero.x && m_bodyNeedMove.y==CCPointZero.y){
-		this->unschedule(schedule_selector(SNSScrollView::moveBodySchedule));
-		this->fixPosition();
-	}
+	//CCLOG("%f -- %f", m_bodyNeedMove.x, m_bodyNeedMove.y);
 }
 
 //当scrollView滚动的时候触发的事件
@@ -762,6 +981,12 @@ void SNSScrollView::scrollViewDidScroll()
 {
     //可以在子类中重写这个方法
 	moveSliders();
+}
+
+//当scrollView启用分页功能的时候触发的事件
+void SNSScrollView::returnNowPage(int nowPage, int pageCount)
+{
+	//在子类中重写这个方法以获得当前移动到的页
 }
 
 //当scrollView点击的时候触发的事件
